@@ -1,0 +1,135 @@
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  --priority-high: #d1372b;
+  --priority-high-bg: rgba(209, 55, 43, 0.12);
+  --priority-medium: #b8860b;
+  --priority-medium-bg: rgba(184, 134, 11, 0.14);
+  --priority-low: #2f9e58;
+  --priority-low-bg: rgba(47, 158, 88, 0.12);
+
+  --danger: #d1372b;
+  --danger-hover: #b82e23;
+  --danger-bg: rgba(209, 55, 43, 0.12);
+  --danger-border: rgba(209, 55, 43, 0.35);
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+  --font-premium: 'Poppins', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Single source of truth for the Global Navigation Bar's height — read by
+     both the bar itself and AppLayout's top offset, so they can't drift.
+     Target: ~50-60px, a compact bar with the application title living
+     separately, in-flow, below it. */
+  --nav-bar-height: 56px;
+
+  /* Home Dashboard design tokens — mirrored in src/config/dashboardTheme.ts.
+     8px-based spacing scale: avoid arbitrary spacing values on the dashboard. */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-xxl: 64px;
+
+  --dashboard-max-width: 960px;
+
+  --card-min-width: 320px;
+  --card-max-width: 340px;
+  --card-height: 200px;
+  --radius-card: 20px;
+
+  --glass-opacity-card: 0.95;
+  --glass-opacity-card-featured: 0.97;
+
+  --shadow-card-featured:
+    rgba(0, 0, 0, 0.18) 0 16px 28px -6px, rgba(0, 0, 0, 0.1) 0 6px 10px -3px;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+    --nav-bar-height: 52px;
+  }
+
+  @media (max-width: 480px) {
+    --nav-bar-height: 48px;
+  }
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)),
+    var(--app-bg-image) center / cover no-repeat fixed;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}

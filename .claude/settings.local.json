@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Remove-Item *)",
+      "PowerShell(node \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\e88e4f3b-516b-4e6a-9331-4ea1d3ce4831\\\\scratchpad\\\\browser-check.mjs\" http://localhost:5173/ \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\e88e4f3b-516b-4e6a-9331-4ea1d3ce4831\\\\scratchpad\\\\smoke.png\")"
+    ]
+  }
+}

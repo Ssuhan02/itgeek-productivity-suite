@@ -1,0 +1,2237 @@
+/* ==========================================================
+   Global Navigation Bar (shared, suite-wide — src/components/GlobalNav.tsx)
+   A compact, standalone fixed bar — the application title lives separately,
+   in-flow, below it (see "Branding header" below), matching the Dashboard.
+   ========================================================== */
+
+.global-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+.global-nav__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--nav-bar-height);
+  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow);
+
+  @media (max-width: 1024px) {
+    padding: 0 16px;
+    gap: 8px;
+  }
+}
+
+.global-nav__group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.global-nav__spacer {
+  flex: 1 1 auto;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.global-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 999px;
+  padding: 8px 16px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+}
+
+.global-nav__item--active {
+  background: rgba(170, 59, 255, 0.35);
+  color: #fff;
+}
+
+.global-nav__icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.global-nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+
+  @media (max-width: 640px) {
+    display: flex;
+  }
+}
+
+.global-nav__mobile-menu {
+  /* Absolutely positioned against .global-nav (its nearest positioned
+     ancestor) so opening it never grows the fixed bar's own layout height —
+     it overlays the page below the bar instead. */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(20, 14, 30, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+  .global-nav__item {
+    width: 100%;
+  }
+}
+
+/* ==========================================================
+   App Layout (shared, suite-wide — src/layouts/AppLayout.tsx)
+   ========================================================== */
+
+.app-layout {
+  height: calc(100dvh - var(--nav-bar-height));
+  margin-top: var(--nav-bar-height);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    height: auto;
+    min-height: calc(100dvh - var(--nav-bar-height));
+    overflow: visible;
+  }
+}
+
+.app-layout--scrollable {
+  height: auto;
+  min-height: calc(100dvh - var(--nav-bar-height));
+  overflow: visible;
+}
+
+/* The Dashboard opts out of the Global Navigation Bar entirely, so it
+   doesn't need to reserve any space for it. */
+.app-layout--no-nav {
+  height: 100dvh;
+  margin-top: 0;
+
+  @media (max-width: 480px) {
+    height: auto;
+    min-height: 100dvh;
+  }
+}
+
+.app-layout__header {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-lg) 20px 0;
+
+  @media (max-width: 1024px) {
+    padding: var(--space-md) 16px 0;
+  }
+
+  @media (max-width: 480px) {
+    padding: var(--space-sm) 16px 0;
+  }
+}
+
+/* Module pages (ToDo, Finance, Settings, Profile) sit below the compact
+   fixed nav bar, so the title needs comfortable breathing room below that
+   bar — modest, since the bar itself already establishes top context
+   (unlike the Dashboard, which has no bar and gets its own tighter,
+   separately-tuned padding above). */
+.app-layout--scrollable .app-layout__header {
+  padding-top: var(--space-xl);
+
+  @media (max-width: 1024px) {
+    padding-top: var(--space-lg);
+  }
+
+  @media (max-width: 480px) {
+    padding-top: var(--space-md);
+  }
+}
+
+.app-layout__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    overflow: visible;
+    padding: 0 16px;
+  }
+}
+
+.app-layout--scrollable .app-layout__content {
+  overflow: visible;
+}
+
+.app-layout__footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 16px 20px 32px;
+
+  @media (max-width: 1024px) {
+    padding: 12px 16px 24px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 16px 20px;
+  }
+}
+
+/* Inside the fixed-viewport layout, spacing above the footer is owned by
+   .app-layout__footer's own padding, not Tagline's standalone margin (which
+   stays untouched for its other, non-fixed-viewport usage elsewhere). */
+.app-layout__footer .app-footer {
+  margin-top: 0;
+}
+
+/* ==========================================================
+   Branding header (shared — src/components/Header.tsx)
+   ========================================================== */
+
+.app-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* One size everywhere — Dashboard and every module header render this
+   exact same rule, so the branding is identical throughout the suite. */
+.app-title {
+  font-family: var(--font-premium);
+  color: #fff;
+  font-weight: 700;
+  font-size: 44px;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+
+  @media (max-width: 1024px) {
+    font-size: 28px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 24px;
+  }
+}
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 56px auto 0;
+  padding: 0 20px;
+
+  @media (max-width: 1024px) {
+    margin-top: 40px;
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 32px;
+    gap: 12px;
+  }
+}
+
+.footer-divider {
+  flex: 1 1 auto;
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.app-tagline {
+  flex: 0 0 auto;
+  font-family: var(--font-premium);
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    font-size: 19px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 16px;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+.layout {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+  /* Extra clearance below the title so it's never obscured by the panels —
+     moves both panels down together, title/nav untouched. */
+  margin-top: 48px;
+
+  @media (max-width: 1024px) {
+    margin-top: 40px;
+  }
+
+  @media (max-width: 860px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 32px;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+
+  @media (max-width: 1024px) {
+    padding: 24px 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+}
+
+.tasks-card {
+  flex: 1 1 540px;
+  max-width: 560px;
+}
+
+.calendar-card {
+  flex: 1 1 436px;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .tasks-card,
+  .calendar-card {
+    max-width: 100%;
+  }
+}
+
+.todo-app {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  h2 {
+    font-size: 17px;
+    color: var(--text-h);
+  }
+}
+
+.show-all-btn {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+}
+
+.todo-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-input-row {
+  display: flex;
+  gap: 8px;
+
+  input[type='text'] {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-h);
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.todo-options-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.add-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+  height: 40px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  background: var(--accent);
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.schedule-toggle {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  &.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+}
+
+.schedule-row {
+  display: flex;
+  gap: 8px;
+
+  input[type='date'],
+  input[type='time'] {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-h);
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.cancel-schedule-btn {
+  flex-shrink: 0;
+  width: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--accent-bg);
+    color: var(--accent);
+  }
+}
+
+.todo-time {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  padding: 1px 5px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+/* Custom dropdown arrow, shared by every <select> in the app (native arrows can't be repositioned via padding). */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6375' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+}
+
+select:hover,
+select:focus-visible {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aa3bff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+.badge-pill {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 5px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  max-width: 108px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.15s;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.badge-pill--control {
+  flex-shrink: 1;
+  min-width: 0;
+  height: 40px;
+  font-size: 13px;
+  padding: 0 10px;
+  border-radius: 8px;
+  max-width: none;
+}
+
+select.badge-pill {
+  padding-right: 22px;
+  background-position: right 7px center;
+  background-size: 10px;
+}
+
+/* Shared "standard" dropdown-arrow geometry: toolbar-sized Priority/Project selects,
+   the filter toolbar, and the calendar month/year selects all target this identical spec. */
+select.badge-pill.badge-pill--control,
+.todo-toolbar select,
+.calendar-month-year select {
+  padding-right: 32px;
+  background-position: right 11px center;
+  background-size: 11px;
+}
+
+.priority-select.priority-high,
+.priority-badge.priority-high {
+  color: var(--priority-high);
+  background-color: var(--priority-high-bg);
+  border-color: rgba(209, 55, 43, 0.3);
+}
+
+.priority-select.priority-medium,
+.priority-badge.priority-medium {
+  color: var(--priority-medium);
+  background-color: var(--priority-medium-bg);
+  border-color: rgba(184, 134, 11, 0.3);
+}
+
+.priority-select.priority-low,
+.priority-badge.priority-low {
+  color: var(--priority-low);
+  background-color: var(--priority-low-bg);
+  border-color: rgba(47, 158, 88, 0.3);
+}
+
+.priority-badge:hover,
+.project-badge:hover {
+  opacity: 0.85;
+}
+
+.project-select,
+.project-badge {
+  color: var(--proj-color, var(--text));
+  background-color: var(--proj-bg, transparent);
+  border-color: var(--proj-border, var(--border));
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  svg {
+    position: absolute;
+    left: 12px;
+    fill: none;
+    stroke: var(--text);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  input {
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 14px;
+    padding: 0 34px 0 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-h);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &::placeholder {
+      color: var(--text);
+      opacity: 0.6;
+    }
+  }
+
+  &:focus-within {
+    input {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 3px var(--accent-bg);
+      outline: none;
+    }
+    svg {
+      stroke: var(--accent);
+      opacity: 1;
+    }
+  }
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 6px;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--accent-bg);
+    color: var(--accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.todo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  select {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 13px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+    &:hover {
+      border-color: var(--accent-border);
+    }
+  }
+}
+
+.manage-projects-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.todo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  max-height: 600px;
+  opacity: 1;
+  transform: translateY(0);
+  overflow: hidden;
+  /* Keep in sync with EXIT_ANIMATION_MS in useDeleteWithUndo.ts. */
+  transition: background 0.15s, opacity 0.24s ease, transform 0.24s ease, max-height 0.24s ease,
+    padding 0.24s ease, border-color 0.24s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--accent-bg);
+  }
+
+  &.editing {
+    padding: 6px 14px;
+    cursor: default;
+
+    &:hover {
+      background: var(--bg);
+    }
+  }
+
+  &.todo-item--deleting {
+    opacity: 0;
+    transform: translateY(-8px);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-color: transparent;
+    pointer-events: none;
+  }
+
+  &.todo-item--restoring {
+    animation: todo-item-restore 0.28s ease;
+  }
+}
+
+@keyframes todo-item-restore {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.todo-actions {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+}
+
+.inline-schedule-row {
+  display: flex;
+  gap: 6px;
+  padding-left: 32px;
+
+  input[type='date'],
+  input[type='time'] {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-h);
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.apply-schedule-btn {
+  flex-shrink: 0;
+  width: 28px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.todo-checkbox {
+  display: inline-flex;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  input {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+}
+
+.todo-text {
+  flex: 1 1 auto;
+  min-width: 70px;
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+  color: var(--text-h);
+  cursor: text;
+}
+
+.completed .todo-text {
+  text-decoration: line-through;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.todo-text mark {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.delete-btn,
+.move-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    opacity: 1;
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.move-btn {
+  cursor: grab;
+}
+
+.todo-item:hover .delete-btn,
+.todo-item:hover .move-btn,
+.todo-item:focus-within .delete-btn,
+.todo-item:focus-within .move-btn {
+  opacity: 1;
+}
+
+.move-btn.active {
+  opacity: 1;
+  background: var(--accent);
+  color: #fff;
+}
+
+.edit-input {
+  flex: 1;
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--bg);
+  color: var(--text-h);
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0;
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.empty-state--search {
+  flex-direction: column;
+  gap: 4px;
+
+  p {
+    margin: 0;
+  }
+}
+
+.empty-state-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.empty-state-hint {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.todo-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Shared toolbar-button look for every control in the footer row — All,
+   Active, Completed, Clear Completed, and Recently Deleted — one rule (every
+   footer button, regardless of its specific class) so the whole row reads as
+   a single, consistent navigation strip instead of a few visually different
+   groups, and any future addition matches automatically. */
+.todo-footer button {
+  font: inherit;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--border);
+  }
+
+  &.active {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.calendar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+
+  button {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-h);
+
+    &:hover:not(:disabled) {
+      background: var(--accent-bg);
+      border-color: var(--accent-border);
+    }
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+
+  @media (max-width: 480px) {
+    gap: 4px;
+
+    button {
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+    }
+  }
+}
+
+.calendar-month-year {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+
+  select {
+    font: inherit;
+    font-weight: 500;
+    font-size: 15px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    color: var(--text-h);
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+    &:hover {
+      border-color: var(--accent-border);
+    }
+  }
+
+  @media (max-width: 480px) {
+    gap: 4px;
+
+    select {
+      font-size: 13px;
+      padding-left: 6px;
+    }
+  }
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  .weekday {
+    text-align: center;
+    padding-bottom: 4px;
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+
+  @media (max-width: 480px) {
+    gap: 3px;
+  }
+}
+
+.calendar-day {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+  transition: background 0.15s, border-color 0.15s;
+  overflow: hidden;
+  cursor: pointer;
+
+  @media (max-width: 480px) {
+    padding: 2px;
+  }
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+
+  &.outside {
+    opacity: 0.4;
+  }
+
+  &.today {
+    border-color: var(--accent);
+  }
+
+  &.today .day-number {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  &.has-tasks {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+  }
+
+  &.has-tasks .day-number {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  &.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  &.selected .day-number {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  &.drag-over {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+  }
+
+  &.has-high-priority::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--priority-high);
+  }
+
+  &.selected.has-high-priority::after {
+    background: #fff;
+  }
+}
+
+.day-number {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-h);
+}
+
+.dev-signature {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.65);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: 6px 10px;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    right: 12px;
+    bottom: 12px;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 6, 13, 0.45);
+  backdrop-filter: blur(2px);
+  animation: dialog-overlay-fade-in 0.15s ease-out;
+}
+
+@keyframes dialog-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialog-panel {
+  width: 100%;
+  max-width: 440px;
+  max-height: 80svh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  text-align: left;
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+}
+
+/* Confirm dialog: reuses .dialog-overlay/.dialog-panel's glass/shadow/radius
+   base above, adding only its own width range + entrance animation on top —
+   ManageProjectsDialog's sizing is untouched. */
+.confirm-dialog {
+  max-width: 480px;
+  min-width: min(420px, 100%);
+  animation: confirm-dialog-pop-in 0.18s ease-out;
+
+  @media (max-width: 480px) {
+    width: 95%;
+    min-width: 0;
+  }
+}
+
+@keyframes confirm-dialog-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confirm-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  p {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+}
+
+.confirm-dialog-item {
+  font-weight: 600;
+  color: var(--text-h);
+  font-size: 15px;
+  overflow-wrap: break-word;
+}
+
+.confirm-dialog-detail {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Generic dialog button pair — reusable by any future confirm dialog (delete
+   project, clear completed, delete all, ...), not just this one. */
+.dialog-btn {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.dialog-btn--neutral {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+
+  &:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+}
+
+.dialog-btn--danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+
+  &:hover {
+    background: var(--danger-hover);
+    border-color: var(--danger-hover);
+  }
+}
+
+/* Recently Deleted dialog: reuses .dialog-overlay/.dialog-panel as its base
+   (same pattern as .confirm-dialog above), just wider to fit a list of cards. */
+.recently-deleted-dialog {
+  max-width: 640px;
+  animation: confirm-dialog-pop-in 0.18s ease-out;
+
+  @media (max-width: 480px) {
+    width: 95%;
+  }
+}
+
+.recently-deleted-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Empty state — rich, purpose-built view for RecentlyDeletedDialog only. */
+
+.recently-deleted-empty-state {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.recently-deleted-empty-title {
+  margin: 6px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.recently-deleted-empty-description {
+  margin: 0;
+  max-width: 380px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.empty-state-info-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--text-h);
+  font-size: 13px;
+  max-width: 380px;
+}
+
+/* Reusable illustration primitive — soft gradient ring + badge + sparkles,
+   built entirely from CSS shapes and the app's existing accent tokens, no
+   external image or new icon asset. Named generically so a future empty
+   state elsewhere could reuse it. */
+.empty-state-illustration {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: illustration-float 5s ease-in-out infinite;
+}
+
+.empty-state-illustration-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-bg) 0%, rgba(170, 59, 255, 0) 72%);
+  border: 1px solid var(--accent-border);
+}
+
+.empty-state-illustration-badge {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), var(--accent-bg));
+  box-shadow: var(--shadow);
+}
+
+.empty-state-illustration-icon {
+  font-size: 40px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(8, 6, 13, 0.15));
+}
+
+.empty-state-illustration-sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: sparkle-pulse 3.6s ease-in-out infinite;
+}
+
+.empty-state-illustration-sparkle--1 {
+  top: 6px;
+  right: 14px;
+  animation-delay: 0s;
+}
+
+.empty-state-illustration-sparkle--2 {
+  bottom: 18px;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  animation-delay: 1.1s;
+}
+
+.empty-state-illustration-sparkle--3 {
+  top: 30px;
+  left: 16px;
+  width: 5px;
+  height: 5px;
+  animation-delay: 2.2s;
+}
+
+@keyframes illustration-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.recently-deleted-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  max-height: 300px;
+  opacity: 1;
+  overflow: hidden;
+  transition: opacity 0.22s ease, max-height 0.22s ease, padding 0.22s ease, border-color 0.22s ease,
+    margin 0.22s ease;
+
+  &.recently-deleted-item--exiting {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-color: transparent;
+    pointer-events: none;
+  }
+}
+
+.recently-deleted-item-main {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recently-deleted-item-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-h);
+  overflow-wrap: break-word;
+}
+
+.recently-deleted-item-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recently-deleted-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.recently-deleted-item-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+
+  @media (max-width: 480px) {
+    flex-basis: 100%;
+    justify-content: stretch;
+
+    .dialog-btn {
+      flex: 1;
+    }
+  }
+}
+
+.restore-btn,
+.delete-forever-btn {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.timer-badge {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    font-size: 19px;
+    margin: 0;
+    color: var(--text-h);
+  }
+}
+
+/* Subtle divider under the title — scoped to RecentlyDeletedDialog's empty
+   state only, so ManageProjectsDialog and the populated-list header are
+   unaffected. */
+.dialog-header--divided {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dialog-close-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--accent-bg);
+    color: var(--accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.project-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-row,
+.add-project-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-project-form {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.project-icon-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--proj-border, var(--border));
+  background: var(--proj-bg, transparent);
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.project-name-input {
+  flex: 1;
+  min-width: 100px;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  @media (max-width: 480px) {
+    min-width: 72px;
+  }
+}
+
+.project-color-swatch {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1px var(--border);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+/* ==========================================================
+   Home Dashboard
+   ========================================================== */
+
+.dashboard-container {
+  width: 100%;
+  max-width: var(--dashboard-max-width);
+  margin: 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.module-grid-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 480px) {
+    flex: 0 0 auto;
+    padding: var(--space-xs) 0;
+  }
+}
+
+.module-grid {
+  /* The grid container — not the cards — controls the layout: a definite
+     width here is what lets the `1fr` column tracks below divide space
+     evenly with a guaranteed gap, instead of the cards' own sizing deciding
+     how close together they end up. */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(var(--card-min-width), 1fr));
+  gap: var(--space-lg);
+  width: 100%;
+  max-width: var(--dashboard-max-width);
+  margin: 0 auto;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    gap: var(--space-md);
+    max-width: 680px;
+  }
+
+  /* Below this, two 260px-minimum columns plus their gap and the page's
+     side padding no longer reliably fit — collapse to one column rather
+     than let the columns shrink past their floor and overlap. */
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 380px;
+    gap: var(--space-md);
+  }
+}
+
+.module-card {
+  width: 100%;
+  max-width: var(--card-max-width);
+  height: var(--card-height);
+  justify-self: center;
+  background: rgba(255, 255, 255, var(--glass-opacity-card));
+  padding: var(--space-md);
+  border-radius: var(--radius-card);
+  border: 2px solid transparent;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  @media (max-width: 1024px) {
+    height: 190px;
+    padding: var(--space-sm);
+  }
+
+  @media (max-width: 480px) {
+    /* Mobile allows page scrolling, so cards size to their content instead
+       of a fixed height. */
+    height: auto;
+    min-height: 190px;
+    padding: var(--space-sm);
+  }
+}
+
+.module-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0 16px 24px -6px,
+    rgba(0, 0, 0, 0.08) 0 6px 8px -2px;
+}
+
+/* The one enabled module (ToDo today) is given slightly more visual weight
+   — brighter glass, a stronger shadow, and a purple hover border — so it
+   reads as the primary, ready-to-use card among the muted "Coming Soon"
+   ones, per the dashboard's visual hierarchy. */
+.module-card:not(.module-card--disabled) {
+  background: rgba(255, 255, 255, var(--glass-opacity-card-featured));
+  box-shadow: var(--shadow-card-featured);
+}
+
+.module-card:not(.module-card--disabled):hover {
+  border-color: var(--accent);
+}
+
+.module-card--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.module-icon {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: var(--space-xs);
+
+  @media (max-width: 1024px) {
+    font-size: 32px;
+  }
+}
+
+.module-title {
+  font-family: var(--heading);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 4px;
+}
+
+.module-description {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 140%;
+  margin: 0 0 var(--space-sm);
+}
+
+.btn-open {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 8px var(--space-md);
+  transition: background 0.15s ease;
+}
+
+.btn-open:hover {
+  background: #9424f0;
+}
+
+.status-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border-radius: 10px;
+  padding: 8px var(--space-sm);
+}
+
+/* ==========================================================
+   Coming Soon placeholder pages (Finance / Settings / Profile)
+   ========================================================== */
+
+.coming-soon-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coming-soon-card {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+}
+
+.picker-grid {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+
+.icon-option {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: var(--accent-bg);
+  }
+  &.selected {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+}
+
+.color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 1px var(--border);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+  &.selected {
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+}
+
+/* ==========================================================================
+   Toast notifications (Undo Delete, and any future non-destructive toast)
+   ========================================================================== */
+
+.toast-container {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 24px));
+  pointer-events: none;
+
+  @media (max-width: 480px) {
+    right: auto;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    align-items: stretch;
+    width: calc(100vw - 24px);
+  }
+}
+
+.toast {
+  position: relative;
+  pointer-events: auto;
+  width: 340px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: toast-slide-in 0.22s ease-out;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+
+  &.toast--exiting {
+    animation: toast-slide-out 0.2s ease-in forwards;
+  }
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toast-message {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.toast-detail {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  overflow-wrap: break-word;
+}
+
+.toast-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toast-action-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--accent-bg);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.toast-dismiss-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--accent-bg);
+    color: var(--accent);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.toast-progress {
+  height: 3px;
+  margin: 4px -16px -10px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.toast-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  animation-name: toast-countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes toast-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
