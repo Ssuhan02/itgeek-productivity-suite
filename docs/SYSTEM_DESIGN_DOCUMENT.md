@@ -93,7 +93,7 @@ Version 1.0 of ITGeek ToDo will be considered complete when:
 - Each user can create, edit, schedule, complete, restore, and delete tasks.
 - User data is securely stored in a database.
 - Users can access their tasks from multiple devices.
-- The application is deployed and accessible through todo.itgeek.xyz.
+- The application is deployed and accessible through todo.itgeek.xyz — one of three planned production subdomains alongside `productivity.itgeek.xyz` (platform landing) and `finance.itgeek.xyz` (Version 2.0's Personal Finance module); see `DEPLOYMENT.md` for the current hosting setup and domain plan (as of 2026-08-07: live on Cloudflare Pages at https://itgeek-productivity-suite.pages.dev, custom domains not yet configured).
 - The application is responsive across desktop, tablet, and mobile devices.
 - The system follows the architecture defined in this document.
 

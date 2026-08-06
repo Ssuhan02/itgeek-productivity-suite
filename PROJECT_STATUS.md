@@ -1,12 +1,12 @@
 # Project Status
 
-_Last updated: 2026-08-06 (end of session)_
+_Last updated: 2026-08-07 (end of session)_
 
 ## Project Overview
 
 **Purpose:** A single-user, browser-local to-do application with an integrated calendar, task prioritization, and project organization. Tasks live in a backlog or are scheduled to a date (and optionally a time). Every task carries a **Priority** (High/Medium/Low) and belongs to a **Project** (a user-managed, colored category — Work, Personal, etc.). The app currently has no backend — everything is stored in the browser's `localStorage`. **This is now understood to be the Version 1.0 client-side foundation of a larger planned platform** — see Project Vision below and `docs/SYSTEM_DESIGN_DOCUMENT.md` for the full System Design Document (SDD).
 
-**Current development stage:** Feature-complete, polished prototype, functionally unchanged since 2026-08-05. Core task management, scheduling, priority, project organization, search, and a full Safe Delete & Recovery system (confirm → 5s undo → 24h Recently Deleted) are all implemented and manually/automatically verified. The app has **no persisted automated test suite** (see Known Gaps). Runs via `npm run dev` (Vite dev server) or `npm run build` + `npm run preview`.
+**Current development stage:** Feature-complete, polished prototype, functionally unchanged since 2026-08-05. Core task management, scheduling, priority, project organization, search, and a full Safe Delete & Recovery system (confirm → 5s undo → 24h Recently Deleted) are all implemented and manually/automatically verified. The app has **no persisted automated test suite** (see Known Gaps). Runs locally via `npm run dev` (Vite dev server) or `npm run build` + `npm run preview`, and as of 2026-08-07 is also **live and publicly deployed** at **https://itgeek-productivity-suite.pages.dev** (Cloudflare Pages, auto-deploying from GitHub on every push to `main` — see `DEPLOYMENT.md`). Production custom domains (`productivity.itgeek.xyz`, `todo.itgeek.xyz`, `finance.itgeek.xyz`) are planned but not yet configured.
 
 ## Project Vision
 
@@ -31,6 +31,23 @@ ITGeek ToDo is the first module of the planned **ITGeek Productivity Suite** —
 
 ## Recent Development Session
 
+_2026-08-07 — source control, deployment, and infrastructure session (done manually outside Claude Code; documented here after the fact). Full narrative: `DEVELOPMENT_LOG.md`'s 2026-08-07 entry. Full deployment reference: `DEPLOYMENT.md`._
+
+**Work completed:**
+- Initialized git, configured it with a GitHub account, and committed the project.
+- Created the GitHub repository (https://github.com/Ssuhan02/itgeek-productivity-suite) and pushed the project to it.
+- Configured a GitHub Actions workflow to deploy to GitHub Pages; deployment could not complete due to a global GitHub Actions hosted-runner outage.
+- Switched hosting to Cloudflare Pages: created a Cloudflare account, connected the GitHub repo, and completed the first successful deployment. Automatic deployment from GitHub on every push to `main` is now configured.
+- Removed the GitHub Pages–specific `base: '/itgeek-productivity-suite/'` from `vite.config.ts` (unnecessary, and would break asset paths, on Cloudflare Pages).
+- Reorganized documentation for consistency: `TODO_NEXT.md` → `ROADMAP.md`, `docs/SESSION_NOTES.md` → `DEVELOPMENT_LOG.md` (moved to project root), added `DEPLOYMENT.md`, updated this file, `CHANGELOG.md`, and `README.md`.
+
+**Decisions made:**
+- Abandon GitHub Pages in favor of Cloudflare Pages for hosting, going forward (not just as a one-time workaround for the outage).
+- DNS stays on GoDaddy; Cloudflare is scoped to hosting/CDN/SSL/auto-deploy only, not DNS.
+- Production architecture will use three subdomains: `productivity.itgeek.xyz` (platform landing), `todo.itgeek.xyz` (ToDo module), `finance.itgeek.xyz` (Personal Finance module, Version 2.0).
+
+**Effect on this repository:** one functional code change (`vite.config.ts`'s `base` option removed — required for the new host, not a feature change) plus the documentation reorganization described above. The application itself is otherwise unchanged from 2026-08-05/06. The project now has real source control and a live, auto-deploying hosting pipeline for the first time — see "Project Overview" above and the updated Tech Stack table below.
+
 _2026-08-06 — planning/architecture session. No application code was changed; this was a documentation- and vision-setting session, distinct from the feature-building session on 2026-08-05 described throughout the rest of this document._
 
 **Work completed:**
@@ -45,7 +62,7 @@ _2026-08-06 — planning/architecture session. No application code was changed; 
 - Version 2.0 will introduce a Personal Finance module.
 - A Home Dashboard will serve as the platform's landing page.
 
-**Effect on this repository:** none, functionally. Everything described elsewhere in this document (the existing frontend implementation) is unaffected and now serves as the Version 1.0 client-side foundation under this plan. Today's work sets the direction for backend/platform work starting next session — see the rewritten `TODO_NEXT.md`.
+**Effect on this repository:** none, functionally. Everything described elsewhere in this document (the existing frontend implementation) is unaffected and now serves as the Version 1.0 client-side foundation under this plan. Today's work sets the direction for backend/platform work starting next session — see the rewritten `ROADMAP.md`.
 
 ## Tech Stack
 
@@ -60,8 +77,10 @@ _2026-08-06 — planning/architecture session. No application code was changed; 
 | Persistence | Browser `localStorage`, two keys: `todos`, `projects` |
 | Browser automation (dev-only) | Playwright 1.62.1 (`devDependency`), Chromium binary installed locally — used to manually drive/screenshot/verify the app during development; **no checked-in test files use it yet** |
 | Package manager | npm (`package-lock.json` present) |
+| Source control | Git + GitHub — [`Ssuhan02/itgeek-productivity-suite`](https://github.com/Ssuhan02/itgeek-productivity-suite) (since 2026-08-07) |
+| Hosting / deployment | Cloudflare Pages, auto-deploying from GitHub on push to `main` — https://itgeek-productivity-suite.pages.dev (since 2026-08-07). See `DEPLOYMENT.md`. |
 
-**Notable absence:** still no test runner wired to `npm test`, no CI config, no `strict: true` in `tsconfig.app.json`. Still **not a git repository** (no `.git` directory) — see the Git Commit Suggestion section.
+**Notable absence:** still no test runner wired to `npm test`, no CI config beyond the now-inactive GitHub Pages workflow (see `DEPLOYMENT.md`), no `strict: true` in `tsconfig.app.json`.
 
 ## Current Folder Structure
 
@@ -124,7 +143,7 @@ ToDo App/
 │           ├── TrashIcon.tsx
 │           ├── SettingsIcon.tsx
 │           └── SearchIcon.tsx
-└── PROJECT_STATUS.md / TODO_NEXT.md / CHANGELOG.md
+└── PROJECT_STATUS.md / ROADMAP.md / CHANGELOG.md / DEVELOPMENT_LOG.md / DEPLOYMENT.md
 ```
 
 No `dist/` committed, no test directory.
@@ -258,8 +277,8 @@ Introduced this session to replace the old single hardcoded `url('./assets/backg
 
 ## Known Bugs / Limitations
 
-1. **New: `TodoInput`'s schedule toggle/date/time don't reset after a successful submit.** `handleSubmit` resets `text` and `priority` but not `showSchedule`/`date`/`time`. Reproduced this session via automated test: add a task with scheduling on, then add a second task without touching the schedule fields — the second task silently inherits the first task's date/time. Real, easily-hit correctness bug; not fixed this session (out of scope for a docs/verification pass) — **flagged as top priority for next session**, see `TODO_NEXT.md`.
-2. **Calendar day cells still not keyboard-accessible** (carried over from the original session, unaddressed across all of this session's work — see `TODO_NEXT.md`).
+1. **New: `TodoInput`'s schedule toggle/date/time don't reset after a successful submit.** `handleSubmit` resets `text` and `priority` but not `showSchedule`/`date`/`time`. Reproduced this session via automated test: add a task with scheduling on, then add a second task without touching the schedule fields — the second task silently inherits the first task's date/time. Real, easily-hit correctness bug; not fixed this session (out of scope for a docs/verification pass) — **flagged as top priority for next session**, see `ROADMAP.md`.
+2. **Calendar day cells still not keyboard-accessible** (carried over from the original session, unaddressed across all of this session's work — see `ROADMAP.md`).
 3. **No persisted automated test suite.** Every feature added/changed this session (Priority, Projects, all layout passes) was verified with one-off Playwright scripts written directly into the project root and deleted immediately after use. Playwright itself is a real `devDependency` now and confirmed working end-to-end, but there are zero checked-in spec files and no `npm test` script — the next session starts from the same "no regression safety net" position as before, just with better tooling available to build one.
 4. **Stale `today` / date-bounds across a day boundary** — unchanged from before; `Calendar.tsx`'s `today` and the module-level `dateBounds` in `TodoInput.tsx`/`TodoItem.tsx` are still computed once and never refreshed.
 5. **Duplicated `getSchedulableDateBounds()` computation** and **structurally similar date/time picker rows** (`.schedule-row` vs. `.inline-schedule-row`) — both still unresolved from the original code-review findings.
@@ -271,7 +290,7 @@ Introduced this session to replace the old single hardcoded `url('./assets/backg
 
 ## Recommended Next Milestone
 
-**Superseded by the 2026-08-06 strategic pivot** — the frontend-hardening recommendation below was written before the project's scope expanded into the ITGeek Productivity Suite (see Project Vision above). The actual next steps now follow `TODO_NEXT.md`'s new priority order: complete the SDD, then design the overall architecture, backend architecture, database schema, authentication system, and REST API, before implementing the backend and connecting it to this frontend.
+**Superseded by the 2026-08-06 strategic pivot** — the frontend-hardening recommendation below was written before the project's scope expanded into the ITGeek Productivity Suite (see Project Vision above). The actual next steps now follow `ROADMAP.md`'s new priority order: complete the SDD, then design the overall architecture, backend architecture, database schema, authentication system, and REST API, before implementing the backend and connecting it to this frontend. `ROADMAP.md` also carries the immediate 2026-08-07 **Next Session Plan** (custom domain configuration) ahead of that longer-range order.
 
 The frontend-hardening items below are **not abandoned** — they're still real, accurate technical debt in the current codebase (nothing about them changed on 2026-08-06) — just deprioritized behind the platform/backend design work for now. Several are worth revisiting specifically once backend integration begins rather than before, since they'll need rethinking anyway once data moves server-side (e.g. localStorage schema validation becomes a server-side validation concern instead).
 
@@ -281,75 +300,23 @@ _Original frontend-focused recommendation, kept for reference:_
 2. **Stand up a real, checked-in automated test suite.** Either adopt Vitest + React Testing Library, or formalize the Playwright workflow already proven in past sessions into actual spec files under a `tests/` (or `e2e/`) directory with an `npm test` script. Cover at minimum: the migration path (old-shape data → new shape), add/edit/toggle/delete, priority and project badge edit-and-revert, filter composition (project + priority + status + calendar date together), and the Manage Projects delete-with-reassignment flow.
 3. **Calendar keyboard accessibility** (Known Bug #2) — still the most significant accessibility gap, and the calendar now surfaces more information (high-priority dot) that keyboard users can't reach at all.
 
-See `TODO_NEXT.md` for the current, active prioritized breakdown (platform/backend-focused as of 2026-08-06).
+See `ROADMAP.md` for the current, active prioritized breakdown (platform/backend-focused as of 2026-08-06, with an immediate custom-domain task list added 2026-08-07).
 
-## Git Commit Suggestion
+## Git & Deployment History
 
-Still **not a git repository**. Two logically separate commits' worth of history so far — suggested Conventional Commits messages for each, to use whenever `git init` happens (oldest first):
+_Supersedes the previous "Git Commit Suggestion" section — the project stopped being suggestion-only on 2026-08-07, when it actually became a git repository. Full narrative: `DEVELOPMENT_LOG.md`'s 2026-08-07 entry; full deployment detail: `DEPLOYMENT.md`._
 
-### 2026-08-06 (docs-only — most recent)
+The project is now a real git repository, hosted on GitHub, with commit history dated 2026-08-07 (git was initialized and the working tree from all prior sessions was committed in one pass, rather than split into the per-session commits speculatively suggested in earlier drafts of this document):
 
-```
-docs: establish system architecture foundation and project vision
+| Commit | Date | Summary |
+|---|---|---|
+| `c1659b2` | 2026-08-07 | Initial commit (full working tree as of end of 2026-08-06 session) |
+| `2e074c9` | 2026-08-07 | Add GitHub Actions deployment (GitHub Pages workflow) |
+| `229454a`, `72106f0`, `a6108c1` | 2026-08-07 | Trigger GitHub Actions (retries during the GitHub Actions runner outage) |
+| `8ce0203` | 2026-08-07 | Enable manual workflow |
+| `4ef2131` | 2026-08-07 | Remove GitHub Pages base path (the `vite.config.ts` fix for Cloudflare Pages) |
 
-Introduce the ITGeek Productivity Suite's System Design Document and
-align project documentation with the new platform-first direction.
-
-- Add docs/SYSTEM_DESIGN_DOCUMENT.md defining the Project Vision, Core
-  Principle, Design Philosophy, Project Goals, Future Vision (v1-v5
-  roadmap), Success Criteria, and Product Scope
-- Update PROJECT_STATUS.md: new Project Vision and Recent Development
-  Session sections, superseded-but-preserved frontend roadmap, updated
-  Starting Point for Tomorrow
-- Replace TODO_NEXT.md with the new platform-build priority order: SDD
-  completion, architecture, backend, database, auth, REST API, backend
-  implementation, frontend integration, deployment
-- Add docs/SESSION_NOTES.md as a new chronological session log,
-  starting with today's planning session
-
-No application code changed — documentation and planning only. The
-existing frontend implementation is unaffected and becomes the
-Version 1.0 client-side foundation under the new plan.
-```
-
-### 2026-08-05 (feature work)
-
-```
-feat: add project management system and improve task layout
-
-Add a full Priority system (field, selector, badge, filter, sort,
-calendar indicator) and a full Project system (user-managed
-categories with icon/color, badge, selector, filter, and a Manage
-Projects dialog), then redesign the task row, add-task toolbar,
-and dropdown controls for better space efficiency and visual
-polish across several iterative passes.
-
-- Add Priority (High/Medium/Low) to every task, with a click-to-edit
-  badge, filter, sort integration, and a calendar day indicator
-- Add Projects as a first-class, user-manageable entity (create,
-  rename, recolor, re-icon, delete-with-reassignment), with a
-  click-to-edit badge, filter, and a new ManageProjectsDialog
-- Redesign the task row: compact badge-pill actions cluster, always-
-  visible calendar/delete buttons with a proper trash icon, flexible
-  title wrapping that avoids one-word-per-line
-- Redesign the add-task toolbar to a two-row layout, fixing an
-  overflow bug, and widen the task-list panel to ~55/45 against
-  the calendar
-- Replace native browser dropdown arrows with a consistent, larger,
-  hover-tinted custom chevron across every <select> in the app
-- Add a fixed, non-interactive developer signature
-- Extend useLocalStorage with an optional migrate() hook and use it
-  to backfill priority/projectId on pre-existing task data
-- Add Playwright as a dev-only tool for manual verification (no
-  checked-in tests yet)
-
-Known issue found during this session's verification and left
-unfixed (documented in PROJECT_STATUS.md / TODO_NEXT.md): the
-add-task form's schedule date/time don't reset after submit.
-
-No automated tests yet; verified manually via Playwright scripts
-run during development. See PROJECT_STATUS.md and CHANGELOG.md.
-```
+Repository: https://github.com/Ssuhan02/itgeek-productivity-suite. Current deployment: Cloudflare Pages at https://itgeek-productivity-suite.pages.dev, auto-deploying on every push to `main` — see `DEPLOYMENT.md` for the full setup and the domain plan.
 
 ## Code Review Findings
 
@@ -387,8 +354,11 @@ _Carried over from the original review; items resolved this session are marked. 
 
 ## Starting Point for Tomorrow
 
-1. Read `docs/SYSTEM_DESIGN_DOCUMENT.md` first — it's now the authoritative reference for direction and scope.
-2. Read `TODO_NEXT.md` — Priority 1 is completing the SDD itself (review it against a fixed outline / fill any gaps), then Priority 2 begins overall project architecture design.
-3. Read `docs/SESSION_NOTES.md` for the most recent session's discussion points and open questions (backend stack, database, auth approach, and hosting/deployment details are all still undecided as of 2026-08-06).
-4. The existing frontend still runs via `npm run dev`; `npm run build && npm run lint` both currently pass clean — that's the baseline to keep green while backend/platform design work proceeds. Its own known bugs/hardening items (previous section) are deprioritized, not fixed, and not forgotten.
-5. **Wait for explicit approval before writing any code** — same standing instruction as every prior session.
+_Updated 2026-08-07 — the immediate priority is now the domain/deployment work below, ahead of the SDD/architecture work in points 3–4 (both still valid, just next in line after domains are live)._
+
+1. Read `ROADMAP.md`'s **Next Session Plan** first — connect the GoDaddy custom domains (`productivity.itgeek.xyz`, `todo.itgeek.xyz`, `finance.itgeek.xyz`) to the Cloudflare Pages deployment and verify automatic deployments still work. Full context: `DEPLOYMENT.md`.
+2. Read `DEVELOPMENT_LOG.md`'s 2026-08-07 entry for exactly how the current git/GitHub/Cloudflare Pages setup was reached (renamed from `docs/SESSION_NOTES.md`).
+3. Once domains are configured, read `docs/SYSTEM_DESIGN_DOCUMENT.md` — it's still the authoritative reference for direction and scope — and resume `ROADMAP.md`'s numbered priorities: Priority 1 is completing the SDD itself (review it against a fixed outline / fill any gaps), then Priority 2 begins overall project architecture design. (`ROADMAP.md` was renamed from `TODO_NEXT.md`.)
+4. Backend stack, database technology, and authentication approach are all still undecided as of 2026-08-06 — see the Open Questions in `DEVELOPMENT_LOG.md`'s 2026-08-06 entry, still unresolved.
+5. The existing frontend still runs via `npm run dev`, is also live at https://itgeek-productivity-suite.pages.dev, and `npm run build && npm run lint` both currently pass clean — that's the baseline to keep green while backend/platform design work proceeds. Its own known bugs/hardening items (previous section) are deprioritized, not fixed, and not forgotten.
+6. **Wait for explicit approval before writing any code** — same standing instruction as every prior session.

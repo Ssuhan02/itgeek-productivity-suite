@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented here. This file starts from the first working session, which took the project from an unmodified Vite/React scaffold to a feature-complete to-do + calendar app.
 
+## 2026-08-07
+
+_Source control, deployment, and infrastructure session — done manually outside Claude Code, documented here after the fact. Full narrative: `DEVELOPMENT_LOG.md`. Full deployment reference: `DEPLOYMENT.md`._
+
+### Added — Source control & hosting
+- Git initialized and configured with a GitHub account; project committed and pushed to a new repository: https://github.com/Ssuhan02/itgeek-productivity-suite
+- Cloudflare Pages connected to the GitHub repository; first deployment completed successfully. Live at https://itgeek-productivity-suite.pages.dev, with automatic deployment on every push to `main`
+
+### Changed
+- `vite.config.ts`: removed `base: '/itgeek-productivity-suite/'`, which was needed only for GitHub Pages' sub-path hosting and is unnecessary (and would break asset paths) on Cloudflare Pages
+
+### Deployment note — GitHub Pages abandoned
+- A GitHub Actions workflow (`.github/workflows/deploy.yml`) was configured first, targeting GitHub Pages, but could not complete deployment due to a global outage of GitHub Actions' hosted runners at the time
+- Decision made to abandon GitHub Pages in favor of Cloudflare Pages going forward, rather than wait out the outage — see `DEPLOYMENT.md` for the full reasoning
+- The GitHub Pages workflow file remains in the repo but is no longer the active deployment path
+
+### Documentation
+- Renamed `TODO_NEXT.md` → `ROADMAP.md`, and `docs/SESSION_NOTES.md` → `DEVELOPMENT_LOG.md` (moved to project root) for consistent naming; content carried over unchanged aside from the new entries below
+- Added `DEPLOYMENT.md` documenting the hosting setup and the planned production domain architecture (`productivity.itgeek.xyz`, `todo.itgeek.xyz`, `finance.itgeek.xyz`, DNS remaining on GoDaddy)
+- Updated `PROJECT_STATUS.md`, `DEVELOPMENT_LOG.md`, `ROADMAP.md`, and `README.md` to reflect the above
+
 ## 2026-08-05
 
 ### Added — Priority System

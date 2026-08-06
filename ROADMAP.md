@@ -1,6 +1,26 @@
-# ITGeek ToDo — Development Roadmap
+# ITGeek Productivity Suite — Development Roadmap
 
-_Prioritized list for the next session(s). This replaces the previous frontend-focused roadmap as of 2026-08-06, following the strategic decision to build ITGeek ToDo as the first module of the ITGeek Productivity Suite — see `docs/SYSTEM_DESIGN_DOCUMENT.md` and `PROJECT_STATUS.md`'s Project Vision section. Nothing here has been started unless explicitly marked done — this is a plan, not a changelog._
+_Prioritized list for the next session(s). Renamed from `TODO_NEXT.md` on 2026-08-07 (content unchanged by the rename itself). This replaces the previous frontend-focused roadmap as of 2026-08-06, following the strategic decision to build ITGeek ToDo as the first module of the ITGeek Productivity Suite — see `docs/SYSTEM_DESIGN_DOCUMENT.md` and `PROJECT_STATUS.md`'s Project Vision section. Nothing here has been started unless explicitly marked done — this is a plan, not a changelog (see `DEVELOPMENT_LOG.md` for that)._
+
+## Next Session Plan
+
+_Added 2026-08-07 — this is the immediate to-do list for the next session, ahead of (and partly overlapping with) the numbered platform priorities below, which remain the longer-range plan._
+
+1. Connect GoDaddy custom domain.
+2. Configure Cloudflare custom domain.
+3. Configure `productivity.itgeek.xyz`.
+4. Configure `todo.itgeek.xyz`.
+5. Configure `finance.itgeek.xyz`.
+6. Verify automatic deployments (confirm a push to `main` still deploys correctly once custom domains are attached).
+7. Continue Home Dashboard improvements.
+8. Continue ToDo module development.
+
+Full deployment context and step-by-step notes: `DEPLOYMENT.md`.
+
+## Milestones completed
+
+- ✅ **Git + GitHub source control** (2026-08-07) — repository initialized, committed, and pushed to [`Ssuhan02/itgeek-productivity-suite`](https://github.com/Ssuhan02/itgeek-productivity-suite).
+- ✅ **Frontend deployed and live** (2026-08-07) — hosted on Cloudflare Pages at https://itgeek-productivity-suite.pages.dev, with automatic deployment from GitHub on every push to `main`. This is ahead of Priority 9 below in sequence (infrastructure groundwork), not a completion of Priority 9 itself — Priority 9 additionally requires the custom domains (see Next Session Plan) and the backend/platform work in Priorities 1–8. Full detail: `DEPLOYMENT.md`.
 
 ## Priority 1 — Complete the System Design Document
 - **Description:** `docs/SYSTEM_DESIGN_DOCUMENT.md` currently covers Project Vision, Core Principle, Design Philosophy, Project Goals, Future Vision (version roadmap), Success Criteria, and Product Scope. Review it for completeness against what the following priorities will need — in particular, confirm it says enough (or add a section) about the intended technology direction, environments, and non-functional requirements (security, performance, availability) before architecture design begins in earnest.
@@ -43,7 +63,8 @@ _Prioritized list for the next session(s). This replaces the previous frontend-f
 - **Estimated complexity:** Large.
 
 ## Priority 9 — Deploy the platform
-- **Description:** Ship Version 1.0 (ITGeek Platform + ToDo) to production, accessible at `todo.itgeek.xyz` per the SDD's Success Criteria.
+- **Description:** Ship Version 1.0 (ITGeek Platform + ToDo) to production, accessible at `productivity.itgeek.xyz` / `todo.itgeek.xyz` (and eventually `finance.itgeek.xyz` for Version 2.0) per the SDD's Success Criteria.
+- **Status: partially in progress.** Hosting infrastructure is live (Cloudflare Pages, auto-deploy from GitHub — see "Milestones completed" above and `DEPLOYMENT.md`), but the production custom domains are not yet configured (see Next Session Plan), and the backend/platform work in Priorities 1–8 hasn't started, so this priority isn't complete — only its hosting foundation is.
 - **Why it matters:** Completion criterion for Version 1.0 per the SDD.
 - **Estimated complexity:** Medium.
 
