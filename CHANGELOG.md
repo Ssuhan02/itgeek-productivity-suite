@@ -2,6 +2,56 @@
 
 All notable changes to this project are documented here. This file starts from the first working session, which took the project from an unmodified Vite/React scaffold to a feature-complete to-do + calendar app.
 
+## 2026-08-08
+
+_Full-day Claude Code session — the largest single-session frontend expansion so far: the ToDo prototype became a multi-module shell (Home Dashboard + config-driven routing) and the ToDo module gained pagination, a real fixed-height layout architecture, and its first proper task-detail experience via the Suite's first reusable UI component. Full architectural reasoning: `ARCHITECTURE.md`. Working conventions established today: `CLAUDE.md`._
+
+### Added — Home Dashboard & module architecture
+- New `DashboardPage` (route `/`) — the platform landing page called for in the SDD, showing a card per module
+- New config-driven module system (`src/config/modules.ts`): a single `MODULES` array (`id`, `title`, `icon`, `description`, `route`, `status: 'active' | 'coming-soon'`, `visibleOnDashboard`, `visibleInNavigation`, `navGroup`, `displayOrder`) drives the dashboard grid, the Global Navigation Bar, and route generation — adding a placeholder module is a one-entry change, no component edits
+- `App.tsx` generates every `<Route>` from `MODULES`; a small `MODULE_PAGES` registry maps a module id to its real page component when one exists, otherwise the route falls back to a shared `ComingSoonPage` automatically
+- New reusable `ComingSoonPage` (`moduleName: string` prop only) — one component serves every not-yet-built module instead of a page per module
+- New `GlobalNav` (compact fixed top bar), `AppLayout` (shared page shell: nav + title + content + footer, with `scrollable`/`showNavigation` variants), `usePageTitle` hook (single source of truth for `document.title`, format: bare page name, e.g. "To-Do", no app-name prefix)
+- Proved the architecture scales: temporarily added Calendar/Notes/Habits/Inventory/PMP Study/Japanese Learning as fully-routed `coming-soon` modules, then removed all six from the dashboard via `visibleOnDashboard: false` alone — zero component changes either direction. They stay defined and fully routed (`/calendar`, `/notes`, ...) for whenever they're ready to surface
+
+### Added — ToDo module: pagination
+- New `usePagination` hook (generic, not todo-specific) + `Pagination` component (Previous/Next, page numbers, active-page highlight, correct disabled states) — 5 tasks per page, applied after the existing search → project → priority → sort pipeline
+- New dev-only fixture data (`src/dev/sampleTodos.ts`, 20 realistic tasks) so pagination has something real to exercise; gated behind `import.meta.env.DEV` and marked `/* @__PURE__ */` so it's provably absent from production bundles (verified via `npm run build` + bundle grep)
+
+### Added — ToDo module: Task Details (the Suite's first reusable UI component)
+- New reusable `Dialog` primitive (`src/components/ui/Dialog/`) — dark blurred backdrop, fade + scale (0.98→1.00) entrance, focus trap, ESC/backdrop-click closing gated by an optional `beforeClose` hook, background scroll lock (new `useBodyScrollLock` hook), and focus restoration to whatever triggered it. Deliberately self-contained (its own `Dialog.css`, distinct `ui-dialog__*` class names) so it doesn't touch the existing `ConfirmDialog`/`ManageProjectsDialog`/`RecentlyDeletedDialog`/`ModalOverlay` — this is the new standard for Personal Finance, Settings, Profile, and eventually those existing dialogs too, not a replacement made today
+- New `TaskDetails` dialog, built on `<Dialog>`: Header (title + read-only Task ID), Task Information (Title, Description), Organization (Project, Priority, Status), Scheduling (Scheduled Date, Due Date), Notes, Footer (Cancel/Save) — reuses `PrioritySelect`/`ProjectSelect` and the shared `.app-input` style rather than inventing new form controls
+- `Todo` extended with `taskId`, `description`, `notes`, `status: 'active' | 'completed'`, `dueDate`, `updatedAt` — all optional/backward-compatible; `migrateTodos` backfills every field for pre-existing tasks (stable `createdAt`-ordered Task ID assignment), verified against hand-crafted old-shape data
+- New `src/utils/taskId.ts` — human-readable Task IDs (`TSK-000001`); derived from whatever `taskId`s already exist rather than a separately-persisted counter, so there's nothing to desync
+- Single click on a task's title opens Task Details; double-click still starts the existing inline rename — both live on the same element via a debounced click handler (~220ms) so a real double-click's second click cancels the pending single-click action before it fires
+- Unsaved-changes protection: closing (ESC, backdrop click, Cancel, the × button) with edited-but-unsaved fields shows a confirmation (reusing the existing `useConfirm`/`ConfirmDialog`, not a new confirmation UI) before discarding
+- Keyboard accessibility: the task title is a real tab stop (`tabIndex`, `role="button"`, Enter/Space activates it)
+
+### Fixed
+- **Task input focus glow removed** — was a `2px` accent outline that read as a soft halo; replaced with a border-color-only change on `:focus-visible`, no outline/box-shadow
+- **Status dropdown rendering multiple/mispositioned chevrons on hover/focus** — root cause: `.app-input { background: var(--bg) }` used the `background` shorthand, which resets `background-image`/`-position`/`-repeat`/`-size` to their initial values on any `<select>` using the class (higher specificity than the base `select` rule that sets the custom arrow), while `select:hover`/`:focus-visible` — higher specificity still — re-set only the image, without position or `no-repeat`, so it rendered at natural size and tiled. Fixed by changing to `background-color` (touches only the one sub-property, so the base rule's image/position/repeat apply normally) — benefits every current and future `.app-input` consumer, not just Status
+- Dev sample data silently not appearing after the very first visit — `useLocalStorage` writes back `"[]"` the moment a list is empty, which is a truthy stored string, so "is anything stored at all" permanently blocked the seed; fixed by checking the *parsed* array's length instead
+
+### Changed — ToDo module layout (several iterative passes, converging on one architecture)
+- `.layout` (the ToDo/Calendar two-column row) converted from Flexbox to **CSS Grid**: a grid row sizes to its tallest item's own content and stretches both cards to match — content-driven equal-height columns with no viewport-binding hack required (an earlier pass had bound the whole page to `100dvh`; removed entirely once Grid made it unnecessary)
+- Applied a **single-stretch-responsibility principle** throughout: only one element in any given chain is allowed `flex-grow` — `.layout` stretches the cards; `.todo-app`/`.calendar` do not also stretch to fill their card. Two elements both claiming "fill available space" was the repeated root cause of stray blank gaps across this session's earlier layout passes
+- `.calendar-grid` now uses `grid-template-rows: repeat(6, 1fr)` and drops its fixed `aspect-ratio: 1` at the desktop breakpoint, so the month grid visibly grows into whatever height it's stretched to (rows expand evenly, cells grow taller) instead of leaving dead space below the last week; mobile/stacked layout keeps square cells (`aspect-ratio: 1` still applies below the two-column breakpoint, where there's no extra height to distribute)
+- Task rows made more compact: padding and title font-size reduced across several passes (title font 15px → 12px); header controls (task input, Priority/Project selects, Add button, calendar-toggle button) shortened ~20%, referencing the footer filter buttons as the compact-control size baseline
+- Pointer cursor added across the entire clickable task row (title, checkbox, badges, empty space) via one `cursor: pointer` on `.todo-item` (inherited) plus fixing `.todo-text`'s stale `cursor: text`; action buttons keep their own cursor (`.move-btn`'s `grab`, `.delete-btn`'s `pointer`) since a more specific rule always wins over an inherited one
+
+### Changed — Shared design system
+- New `.app-input` base class — the standard for every text input in the Suite (border, radius, padding, font, background, placeholder, disabled, and the clean border-color-only focus state). Task title input and Search input both refactored onto it, removing duplicated CSS (Search's old glow-style focus box-shadow was removed as part of this, so both inputs now share **identical** focus behavior, not just similar-looking ones)
+
+### Documentation / process
+- Established `file_listing.txt` (root) as a maintained project file map — regenerated and diffed against its previous version after every task this session, not just at the end
+- Adopted (via user instruction, recorded for future sessions) a standing rule: `file_listing.txt` updates every task; `PROJECT_STATUS.md`/`CHANGELOG.md`/`ROADMAP.md`/`ARCHITECTURE.md`/`CLAUDE.md` update only on an explicit end-of-day request — this session is the first of the latter
+- New `ARCHITECTURE.md` and `CLAUDE.md` added today (see below)
+
+### Implementation notes
+- Every change this session was verified with Playwright-driven browser automation (screenshots, DOM/computed-style assertions, focus/keyboard checks) against the running dev server; scripts were written per-task into a scratch directory and deleted after use — nothing checked into the repo
+- `tsc -b` and `oxlint` both kept clean after every change; a production build (`npm run build`) was run specifically to verify the dev-only sample data is excluded
+- Two real bugs were caught by the verification process itself (not just by inspection) before being fixed: the Task Details focus-restore race (draft state seeded via `useEffect`, one render too late for Dialog's focus-on-open logic to find real content — fixed by seeding via `useState`'s lazy initializer and remounting per task via `key={todo.id}`) and the Status dropdown's CSS shorthand bug above
+
 ## 2026-08-07
 
 _Source control, deployment, and infrastructure session — done manually outside Claude Code, documented here after the fact. Full narrative: `DEVELOPMENT_LOG.md`. Full deployment reference: `DEPLOYMENT.md`._

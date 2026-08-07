@@ -10,7 +10,8 @@
       "Bash(npx oxlint *)",
       "Bash(cp \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\2f3bbef9-2e4f-475b-bf8b-464ce748296e\\\\scratchpad\\\\verify-taskdetails-refine.mjs\" ./verify-taskdetails-refine.mjs)",
       "Bash(node verify-taskdetails-refine.mjs)",
-      "Bash(rm -f ./verify-taskdetails-refine.mjs)"
+      "Bash(rm -f ./verify-taskdetails-refine.mjs)",
+      "Bash(git add *)"
     ]
   }
 }

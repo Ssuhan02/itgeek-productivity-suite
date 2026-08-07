@@ -3,7 +3,9 @@ settings.local.json	C:\Suhan Files\Vibe Coding\ToDo App\.claude
 deploy.yml	C:\Suhan Files\Vibe Coding\ToDo App\.github\workflows
 .gitignore	C:\Suhan Files\Vibe Coding\ToDo App
 .oxlintrc.json	C:\Suhan Files\Vibe Coding\ToDo App
+ARCHITECTURE.md	C:\Suhan Files\Vibe Coding\ToDo App
 CHANGELOG.md	C:\Suhan Files\Vibe Coding\ToDo App
+CLAUDE.md	C:\Suhan Files\Vibe Coding\ToDo App
 DEPLOYMENT.md	C:\Suhan Files\Vibe Coding\ToDo App
 DEVELOPMENT_LOG.md	C:\Suhan Files\Vibe Coding\ToDo App
 SYSTEM_DESIGN_DOCUMENT.md	C:\Suhan Files\Vibe Coding\ToDo App\docs
