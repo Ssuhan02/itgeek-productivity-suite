@@ -20,6 +20,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
       <SearchIcon size={16} />
       <input
         ref={inputRef}
+        className="app-input"
         type="text"
         value={value}
         onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}

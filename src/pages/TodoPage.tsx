@@ -3,6 +3,7 @@ import type { DragEvent } from 'react'
 import { AppLayout } from '../layouts/AppLayout'
 import { TodoInput } from '../components/TodoInput'
 import { TodoList } from '../components/TodoList'
+import { Pagination } from '../components/Pagination'
 import { TodoFilters } from '../components/TodoFilters'
 import { TodoToolbar } from '../components/TodoToolbar'
 import { SearchBar } from '../components/SearchBar'
@@ -17,8 +18,29 @@ import { sortTodos } from '../utils/sortTodos'
 import { searchTodos } from '../utils/search'
 import { useDeleteWithUndo } from '../hooks/useDeleteWithUndo'
 import { useRecentlyDeleted } from '../hooks/useRecentlyDeleted'
+import { usePageTitle } from '../hooks/usePageTitle'
+import { usePagination } from '../hooks/usePagination'
+import { DEV_SAMPLE_TODOS } from '../dev/sampleTodos'
 import type { Filter, Priority, Project, SortOption, Todo } from '../types'
 import '../App.css'
+
+/** Task list page size — see usePagination/Pagination. */
+const TASKS_PER_PAGE = 5
+
+// DEV-ONLY: seeds the task list with 20 sample tasks so pagination has
+// something real to test against — but only in dev builds, and only when
+// there are genuinely no tasks yet, never overwriting real data. This
+// checks the *parsed* array's length, not merely whether the `todos` key
+// exists in localStorage: useLocalStorage writes back `"[]"` the moment
+// the list is empty, which is still a truthy stored string, so keying off
+// "is anything stored at all" would permanently block the seed after the
+// very first (empty) visit. `import.meta.env.DEV` is statically false in
+// production, so this branch and DEV_SAMPLE_TODOS are stripped from the
+// production bundle entirely. To disable: delete src/dev/sampleTodos.ts
+// and this function (then pass `todos` straight to migrateTodos below).
+function applyDevSeed(todos: Todo[]): Todo[] {
+  return import.meta.env.DEV && todos.length === 0 ? DEV_SAMPLE_TODOS : todos
+}
 
 function migrateTodos(todos: Todo[], projects: Project[]): Todo[] {
   const fallbackProjectId = projects[0]?.id ?? DEFAULT_PROJECT_ID
@@ -33,8 +55,12 @@ function migrateTodos(todos: Todo[], projects: Project[]): Todo[] {
 }
 
 function TodoPage() {
+  usePageTitle('To-Do')
+
   const [projects, setProjects] = useLocalStorage<Project[]>('projects', DEFAULT_PROJECTS)
-  const [todos, setTodos] = useLocalStorage<Todo[]>('todos', [], (stored) => migrateTodos(stored, projects))
+  const [todos, setTodos] = useLocalStorage<Todo[]>('todos', applyDevSeed([]), (stored) =>
+    applyDevSeed(migrateTodos(stored, projects)),
+  )
   const [filter, setFilter] = useState<Filter>('all')
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all')
@@ -223,6 +249,16 @@ function TodoPage() {
 
   const filteredTodos = useMemo(() => sortTodos(statusFilteredTodos, sort), [statusFilteredTodos, sort])
 
+  // Pagination is the last step of the pipeline — it only slices the
+  // already filtered-and-sorted list for display; it never affects which
+  // todos match or what order they're in.
+  const {
+    pageItems: pagedTodos,
+    currentPage,
+    totalPages,
+    goToPage,
+  } = usePagination(filteredTodos, TASKS_PER_PAGE)
+
   const activeCount = useMemo(
     () => searchFilteredTodos.filter((todo) => !todo.completed).length,
     [searchFilteredTodos],
@@ -233,33 +269,44 @@ function TodoPage() {
     <AppLayout scrollable>
       <div className="layout">
         <div className="card tasks-card" onDragOver={(e) => e.preventDefault()} onDrop={handleBacklogDrop}>
+          {/* Every section here — header, task list, pagination, footer —
+              is natural height and stacked in document order, no spacer
+              needed between any of them. .todo-app itself still fills
+              whatever height the parent layout (.layout's align-items:
+              stretch, matching .calendar-card) gives the card, but since
+              nothing inside it carries flex-grow anymore, any leftover
+              space simply falls after the last child (the footer) by
+              flexbox's own default — not between Pagination and the
+              footer. See .todo-app in App.css. */}
           <div className="todo-app">
-            {selectedDate && (
-              <div className="tasks-header">
-                <h2>{formatLongDate(selectedDate)}</h2>
-                <button type="button" className="show-all-btn" onClick={() => setSelectedDate(null)}>
-                  Show all
-                </button>
-              </div>
-            )}
-            <TodoInput projects={projects} onAdd={addTodo} />
-            {visibleTodos.length > 0 && (
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
-            )}
-            {visibleTodos.length > 0 && (
-              <TodoToolbar
-                priorityFilter={priorityFilter}
-                onPriorityFilterChange={setPriorityFilter}
-                sort={sort}
-                onSortChange={setSort}
-                projects={projects}
-                projectFilter={projectFilter}
-                onProjectFilterChange={setProjectFilter}
-                onManageProjects={() => setIsManagingProjects(true)}
-              />
-            )}
+            <div className="todo-app__header">
+              {selectedDate && (
+                <div className="tasks-header">
+                  <h2>{formatLongDate(selectedDate)}</h2>
+                  <button type="button" className="show-all-btn" onClick={() => setSelectedDate(null)}>
+                    Show all
+                  </button>
+                </div>
+              )}
+              <TodoInput projects={projects} onAdd={addTodo} />
+              {visibleTodos.length > 0 && (
+                <SearchBar value={searchQuery} onChange={setSearchQuery} />
+              )}
+              {visibleTodos.length > 0 && (
+                <TodoToolbar
+                  priorityFilter={priorityFilter}
+                  onPriorityFilterChange={setPriorityFilter}
+                  sort={sort}
+                  onSortChange={setSort}
+                  projects={projects}
+                  projectFilter={projectFilter}
+                  onProjectFilterChange={setProjectFilter}
+                  onManageProjects={() => setIsManagingProjects(true)}
+                />
+              )}
+            </div>
             <TodoList
-              todos={filteredTodos}
+              todos={pagedTodos}
               projects={projects}
               searchQuery={searchQuery}
               animatingOutIds={animatingOutIds}
@@ -273,16 +320,19 @@ function TodoPage() {
               onPriorityChange={changePriority}
               onProjectChange={changeProject}
             />
-            {(visibleTodos.length > 0 || deletedTodos.length > 0) && (
-              <TodoFilters
-                filter={filter}
-                onFilterChange={setFilter}
-                completedCount={completedCount}
-                onClearCompleted={clearCompleted}
-                onOpenRecentlyDeleted={() => setIsRecentlyDeletedOpen(true)}
-                isRecentlyDeletedActive={isRecentlyDeletedOpen}
-              />
-            )}
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />
+            <div className="todo-app__footer">
+              {(visibleTodos.length > 0 || deletedTodos.length > 0) && (
+                <TodoFilters
+                  filter={filter}
+                  onFilterChange={setFilter}
+                  completedCount={completedCount}
+                  onClearCompleted={clearCompleted}
+                  onOpenRecentlyDeleted={() => setIsRecentlyDeletedOpen(true)}
+                  isRecentlyDeletedActive={isRecentlyDeletedOpen}
+                />
+              )}
+            </div>
           </div>
         </div>
         <div className="card calendar-card">

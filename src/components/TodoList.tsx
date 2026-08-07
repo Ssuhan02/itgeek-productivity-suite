@@ -35,18 +35,23 @@ export function TodoList({
   onPriorityChange,
   onProjectChange,
 }: TodoListProps) {
+  // Caller (TodoPage's .todo-app__content) owns the flexible, bounded
+  // region this renders into — an empty list, a "no results" message, or a
+  // page of task rows are each a single flex:1 element (.empty-state /
+  // .todo-list already carry that rule), so whichever renders fills that
+  // region identically; `todos` is already capped to one page by
+  // TodoPage's usePagination.
   if (todos.length === 0) {
-    if (searchQuery.trim()) {
-      return (
-        <EmptyState
-          className="empty-state--search"
-          icon="🔍"
-          title="No matching tasks found."
-          hint="Try another keyword."
-        />
-      )
-    }
-    return <EmptyState title="Nothing here yet." />
+    return searchQuery.trim() ? (
+      <EmptyState
+        className="empty-state--search"
+        icon="🔍"
+        title="No matching tasks found."
+        hint="Try another keyword."
+      />
+    ) : (
+      <EmptyState title="Nothing here yet." />
+    )
   }
 
   return (

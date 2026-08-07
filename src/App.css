@@ -308,10 +308,21 @@
   }
 }
 
+/* CSS Grid, not Flexbox: a grid row sizes itself to its tallest item's own
+   content (grid-auto-rows: auto, the default), and align-items: stretch
+   (also grid's default) then matches every item in that row to THAT
+   height — not to some externally-imposed viewport height. That's what
+   makes .calendar-card match .tasks-card "naturally": whichever card's
+   content (.todo-app / .calendar) is taller sets the row height, and the
+   other one stretches to meet it — no bounded ancestor, no viewport
+   binding, no flex-grow anywhere in this chain required for it to work. */
 .layout {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
+  display: grid;
+  /* Same 540:436 proportions the two cards used as flex-basis before —
+     minmax(0, …fr) keeps a long task title or the calendar grid from
+     blowing out its own column (the grid-item equivalent of min-width: 0
+     on a flex item). */
+  grid-template-columns: minmax(0, 540fr) minmax(0, 436fr);
   gap: 24px;
   width: 100%;
   max-width: 1000px;
@@ -324,12 +335,50 @@
   }
 
   @media (max-width: 860px) {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 
   @media (max-width: 480px) {
     margin-top: 32px;
+  }
+}
+
+/* ==========================================================
+   Shared Input Style — the standard for every text input in the
+   ITGeek Productivity Suite (task title, search, and any future
+   Personal Finance / Settings / Profile input). Defines the full
+   visual contract: border, radius, padding, font, background,
+   placeholder, disabled, and focus. A consumer applies this
+   class and layers on ONLY what's genuinely specific to it —
+   sizing/layout (e.g. flex-basis) or icon-driven padding — never
+   re-declares border/radius/background/transition/focus; that
+   duplication is exactly what this class exists to remove.
+
+   Focus is intentionally border-color-only: no outline, no
+   box-shadow, no glow. Every .app-input — everywhere it's used —
+   shares this identical focus behavior; nothing overrides it. */
+.app-input {
+  font: inherit;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: var(--text);
+    opacity: 0.6;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    border-color: var(--accent);
+    outline: none;
   }
 }
 
@@ -352,12 +401,15 @@
 }
 
 .tasks-card {
-  flex: 1 1 540px;
+  /* Width comes from .layout's grid-template-columns now, not flex-basis —
+     min-width: 0 is still needed so a long unbroken task title can't blow
+     out the column (the automatic minimum size flex AND grid items get by
+     default, unless overridden, is their content's natural size). */
+  min-width: 0;
   max-width: 560px;
 }
 
 .calendar-card {
-  flex: 1 1 436px;
   min-width: 0;
 }
 
@@ -368,13 +420,49 @@
   }
 }
 
+/* The widget's layout contract: header, TodoList, Pagination, and the
+   footer are all natural-height, stacked in document order — none of them
+   grow, and there's no spacer between any of them.
+
+   .tasks-card's own height comes from .layout (a CSS Grid — see .layout in
+   App.css): the row it's in sizes to the taller of .tasks-card / .calendar-
+   card's natural content, and grid's own align-items: stretch matches
+   both cards to that height. `.todo-app` does NOT also claim that space —
+   flex-grow: 0 means it sizes to exactly what its content needs, nothing
+   more. Two elements both trying to "fill available space" in the same
+   chain is exactly what produced the stray gaps this layout went through
+   in earlier passes; with only .layout doing that job, any leftover
+   height is unambiguous: it's .tasks-card being stretched to match a
+   taller .calendar-card, visible below the footer, inside the card's
+   padding — never confused with the widget's own internal layout.
+
+   flex-shrink: 1 + min-height: 0 are kept (not flex: 0 0 auto) as a
+   defensive fallback — if this card is ever squeezed narrower than its
+   content needs (e.g. a future tighter breakpoint), .todo-list's own
+   shrink + overflow-y: auto still has somewhere to shrink into instead of
+   visually overflowing. Nothing here is a hardcoded pixel height. */
 .todo-app {
   width: 100%;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.todo-app__header {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todo-app__footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .tasks-header {
@@ -416,20 +504,13 @@
   display: flex;
   gap: 8px;
 
+  /* Appearance (border, radius, padding, background, font, focus, ...)
+     comes entirely from .app-input (see App.css's shared-styles section) —
+     this only adds the flex-row sizing that's specific to sitting inside
+     .todo-input-row. */
   input[type='text'] {
     flex: 1;
     min-width: 0;
-    font: inherit;
-    padding: 12px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text-h);
-
-    &:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
   }
 }
 
@@ -443,7 +524,9 @@
 .add-btn {
   flex-shrink: 0;
   margin-left: auto;
-  height: 40px;
+  /* 20% shorter than the original 40px, matching the other compacted
+     header controls — text stays 14px, only the surrounding box shrinks. */
+  height: 32px;
   font: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -466,8 +549,10 @@
 
 .schedule-toggle {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  /* 20% smaller than the original 40px, matching the other compacted
+     header controls; the calendar icon itself keeps its own size prop. */
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -591,7 +676,9 @@ select:focus-visible {
 .badge-pill--control {
   flex-shrink: 1;
   min-width: 0;
-  height: 40px;
+  /* 20% shorter than the original 40px, matching the other compacted
+     header controls (Priority/Project selects) — text stays 13px. */
+  height: 32px;
   font-size: 13px;
   padding: 0 10px;
   border-radius: 8px;
@@ -665,35 +752,24 @@ select.badge-pill.badge-pill--control,
     opacity: 0.7;
   }
 
+  /* Appearance (border, radius, background, placeholder, focus, ...) comes
+     entirely from .app-input — this only adds the icon-driven sizing that's
+     specific to the search input (room for the icon on the left, a fixed
+     height to align it). */
   input {
     width: 100%;
     height: 40px;
     box-sizing: border-box;
-    font: inherit;
     font-size: 14px;
     padding: 0 34px 0 36px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text-h);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-    &::placeholder {
-      color: var(--text);
-      opacity: 0.6;
-    }
   }
 
-  &:focus-within {
-    input {
-      border-color: var(--accent-border);
-      box-shadow: 0 0 0 3px var(--accent-bg);
-      outline: none;
-    }
-    svg {
-      stroke: var(--accent);
-      opacity: 1;
-    }
+  /* Search-specific: the icon changes color when the input is focused. The
+     input's own focus behavior (border-color only, no glow) comes from
+     .app-input and isn't duplicated here. */
+  &:focus-within svg {
+    stroke: var(--accent);
+    opacity: 1;
   }
 }
 
@@ -792,7 +868,13 @@ select.badge-pill.badge-pill--control,
   list-style: none;
   margin: 0;
   padding: 0;
-  flex: 1;
+  /* No flex-grow: the list sizes to its own visible rows (up to one page —
+     see usePagination), not to whatever space .todo-app__body has left, so
+     its border never wraps empty space below the last row. flex-shrink +
+     min-height: 0 + overflow-y: auto together mean it only ever scrolls
+     internally, on the rare page where 5 rows genuinely can't fit — it
+     never pushes Pagination or the footer down. */
+  flex: 0 1 auto;
   min-height: 0;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -804,7 +886,10 @@ select.badge-pill.badge-pill--control,
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 14px;
+  /* Vertical padding trimmed for a more compact row (6px, was 12px);
+     horizontal padding — and every badge/button/icon inside — is
+     untouched. */
+  padding: 6px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   max-height: 600px;
@@ -940,7 +1025,10 @@ select.badge-pill.badge-pill--control,
 .todo-text {
   flex: 1 1 auto;
   min-width: 70px;
-  font-size: 15px;
+  /* Only the task title text shrinks (15px → 14px → 13px → now 12px) —
+     buttons, badges, filters, checkbox, and icons all keep their own
+     sizes. */
+  font-size: 12px;
   line-height: 1.35;
   overflow-wrap: break-word;
   color: var(--text-h);
@@ -1031,12 +1119,15 @@ select.badge-pill.badge-pill--control,
 }
 
 .empty-state {
-  flex: 1;
+  /* No flex-grow, matching .todo-list — sits at its own natural (small)
+     height instead of stretching to fill .todo-app__body. */
+  flex: 0 1 auto;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0;
+  padding: 24px 0;
   color: var(--text);
   opacity: 0.7;
 }
@@ -1059,6 +1150,68 @@ select.badge-pill.badge-pill--control,
 .empty-state-hint {
   font-size: 13px;
   opacity: 0.8;
+}
+
+/* Task list pagination — appears once a filtered/sorted view has more than
+   one page (see Pagination.tsx / usePagination.ts). Reuses the same small
+   bordered-pill button language as .show-all-btn / .todo-footer button so
+   it reads as part of the same design system. */
+.pagination {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* One page of results: keep the row's height reserved (see Pagination.tsx)
+   so the panel doesn't jump by one row's height the moment a 6th task
+   pushes it into a second page. */
+.pagination--hidden {
+  visibility: hidden;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-nav,
+.pagination-page {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.pagination-page {
+  min-width: 30px;
+  padding: 4px 8px;
+  text-align: center;
+
+  &.active {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-weight: 600;
+  }
 }
 
 .todo-footer {
@@ -1106,16 +1259,27 @@ select.badge-pill.badge-pill--control,
   }
 }
 
+/* Unlike .todo-app, .calendar DOES fill its card (flex: 1 1 auto) — the
+   month grid is meant to visibly grow into whatever extra height matching
+   the To-Do card's row provides (see .layout in App.css), rather than
+   leave it as blank space. Header and weekdays stay natural-height
+   (flex: 0 0 auto below); .calendar-grid is the one section that grows to
+   consume the leftover space, distributing it across its 6 rows — see
+   .calendar-grid / .calendar-day for how. At the ≤860px stacked breakpoint
+   this is a no-op: each card is sized to its own natural content there, so
+   there's no extra height for flex: 1 to claim in the first place. */
 .calendar {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
   text-align: left;
 }
 
 .calendar-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1192,6 +1356,7 @@ select.badge-pill.badge-pill--control,
 }
 
 .calendar-weekdays {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   font-size: 12px;
@@ -1207,8 +1372,18 @@ select.badge-pill.badge-pill--control,
 }
 
 .calendar-grid {
+  /* The only section of the calendar that grows — see .calendar. Always
+     42 cells (getMonthGrid pads to 6 full weeks), so 6 explicit equal-
+     fraction row tracks split whatever height flex: 1 hands this element
+     evenly across every row, instead of the rows staying content-sized
+     and leaving the extra height beneath them. min-height: 0 lets it
+     actually shrink to fit at the ≤860px stacked breakpoint too, where
+     there's no extra height to distribute in the first place. */
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
   gap: 4px;
 
   @media (max-width: 480px) {
@@ -1218,6 +1393,11 @@ select.badge-pill.badge-pill--control,
 
 .calendar-day {
   position: relative;
+  /* Square by default (stacked/narrower layouts, where .calendar-grid has
+     no extra height to distribute — see .calendar). At the two-column
+     desktop breakpoint this is dropped: .calendar-grid's row tracks are
+     genuinely stretched there, and a fixed 1:1 ratio would fight that
+     instead of letting each cell grow taller with its row. */
   aspect-ratio: 1;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -1229,6 +1409,10 @@ select.badge-pill.badge-pill--control,
   transition: background 0.15s, border-color 0.15s;
   overflow: hidden;
   cursor: pointer;
+
+  @media (min-width: 861px) {
+    aspect-ratio: auto;
+  }
 
   @media (max-width: 480px) {
     padding: 2px;
@@ -1885,18 +2069,29 @@ select.badge-pill.badge-pill--control,
   }
 }
 
+/* Every module card — active or coming-soon — shares this one styling: the
+   navigation standard is that every card is equally clickable, so there is
+   no "featured" vs. "disabled" visual tier here. Only the inner content
+   (title, description, and the Open/Coming Soon label) differs per module. */
 .module-card {
   width: 100%;
   max-width: var(--card-max-width);
   height: var(--card-height);
   justify-self: center;
-  background: rgba(255, 255, 255, var(--glass-opacity-card));
+  background: rgba(255, 255, 255, var(--glass-opacity-card-featured));
   padding: var(--space-md);
   border-radius: var(--radius-card);
   border: 2px solid transparent;
+  box-shadow: var(--shadow-card-featured);
   align-items: center;
   justify-content: center;
   text-align: center;
+  /* The whole card is a <Link> now — neutralize default anchor styling so
+     it still looks exactly like the plain card it replaced. (Anchors get a
+     pointer cursor from the browser natively; ComingSoonPage reuses this
+     class on a plain, non-interactive <div>, so we don't force one here.) */
+  color: inherit;
+  text-decoration: none;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -1918,27 +2113,10 @@ select.badge-pill.badge-pill--control,
 
 .module-card:hover {
   transform: translateY(-4px);
+  border-color: var(--accent);
   box-shadow:
     rgba(0, 0, 0, 0.16) 0 16px 24px -6px,
     rgba(0, 0, 0, 0.08) 0 6px 8px -2px;
-}
-
-/* The one enabled module (ToDo today) is given slightly more visual weight
-   — brighter glass, a stronger shadow, and a purple hover border — so it
-   reads as the primary, ready-to-use card among the muted "Coming Soon"
-   ones, per the dashboard's visual hierarchy. */
-.module-card:not(.module-card--disabled) {
-  background: rgba(255, 255, 255, var(--glass-opacity-card-featured));
-  box-shadow: var(--shadow-card-featured);
-}
-
-.module-card:not(.module-card--disabled):hover {
-  border-color: var(--accent);
-}
-
-.module-card--disabled {
-  opacity: 0.6;
-  pointer-events: none;
 }
 
 .module-icon {

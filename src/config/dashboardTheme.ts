@@ -57,9 +57,9 @@ export const TYPOGRAPHY = {
   footer: 24,
 } as const
 
-/** Shadow presets. `cardFeatured` is used on the one enabled module (ToDo
- * today) so it reads as the primary, ready-to-use card among "Coming
- * Soon" ones. */
+/** Shadow presets. `cardFeatured` is used on every module card — the
+ * navigation standard is that active and coming-soon modules share
+ * identical styling, so there's no separate visual tier per card status. */
 export const SHADOW = {
   card: 'rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px',
   cardFeatured: 'rgba(0, 0, 0, 0.18) 0 16px 28px -6px, rgba(0, 0, 0, 0.1) 0 6px 10px -3px',

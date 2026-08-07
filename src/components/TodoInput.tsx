@@ -55,6 +55,7 @@ export function TodoInput({ projects, onAdd }: TodoInputProps) {
     <form className="todo-input" onSubmit={handleSubmit}>
       <div className="todo-input-row">
         <input
+          className="app-input"
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}

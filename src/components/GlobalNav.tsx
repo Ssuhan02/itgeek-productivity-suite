@@ -4,12 +4,12 @@ import { MODULES } from '../config/modules'
 
 interface NavItem {
   id: string
-  name: string
+  title: string
   icon: string
   route: string
 }
 
-const HOME_ITEM: NavItem = { id: 'home', name: 'Home', icon: '🏠', route: '/' }
+const HOME_ITEM: NavItem = { id: 'home', title: 'Home', icon: '🏠', route: '/' }
 
 function byDisplayOrder(a: { displayOrder: number }, b: { displayOrder: number }) {
   return a.displayOrder - b.displayOrder
@@ -39,7 +39,7 @@ export function GlobalNav() {
       <span className="global-nav__icon" aria-hidden="true">
         {item.icon}
       </span>
-      {item.name}
+      {item.title}
     </Link>
   )
 
