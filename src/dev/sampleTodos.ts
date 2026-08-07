@@ -1,3 +1,4 @@
+import { formatTaskId } from '../utils/taskId'
 import type { Priority, Todo } from '../types'
 
 /**
@@ -47,13 +48,22 @@ const SAMPLE_TASKS: SampleTask[] = [
 // production builds, where TodoPage's `import.meta.env.DEV` check folds to
 // `false`), the whole computation — and every string above — is eligible
 // to be dropped, not just the now-dead reference to it.
-export const DEV_SAMPLE_TODOS: Todo[] = /* @__PURE__ */ SAMPLE_TASKS.map((task, index) => ({
-  id: `dev-sample-${index + 1}`,
-  text: task.text,
-  completed: task.completed ?? false,
+export const DEV_SAMPLE_TODOS: Todo[] = /* @__PURE__ */ SAMPLE_TASKS.map((task, index) => {
   // Staggered, oldest-first creation timestamps so default sorting reads
   // naturally instead of every task sharing one instant.
-  createdAt: Date.now() - (SAMPLE_TASKS.length - index) * 60 * 60 * 1000,
-  priority: task.priority,
-  projectId: task.projectId,
-}))
+  const createdAt = Date.now() - (SAMPLE_TASKS.length - index) * 60 * 60 * 1000
+  const completed = task.completed ?? false
+  return {
+    id: `dev-sample-${index + 1}`,
+    taskId: formatTaskId(index + 1),
+    text: task.text,
+    completed,
+    createdAt,
+    updatedAt: createdAt,
+    priority: task.priority,
+    projectId: task.projectId,
+    description: '',
+    notes: '',
+    status: completed ? 'completed' : 'active',
+  }
+})

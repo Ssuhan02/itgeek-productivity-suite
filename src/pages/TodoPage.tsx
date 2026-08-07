@@ -10,12 +10,14 @@ import { SearchBar } from '../components/SearchBar'
 import { Calendar } from '../components/Calendar'
 import { ManageProjectsDialog } from '../components/ManageProjectsDialog'
 import { RecentlyDeletedDialog } from '../components/RecentlyDeletedDialog'
+import { TaskDetails } from '../components/TaskDetails'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { formatLongDate } from '../utils/date'
 import { DEFAULT_PRIORITY } from '../utils/priority'
 import { DEFAULT_PROJECT_ID, DEFAULT_PROJECTS } from '../utils/projects'
 import { sortTodos } from '../utils/sortTodos'
 import { searchTodos } from '../utils/search'
+import { formatTaskId, nextTaskNumber } from '../utils/taskId'
 import { useDeleteWithUndo } from '../hooks/useDeleteWithUndo'
 import { useRecentlyDeleted } from '../hooks/useRecentlyDeleted'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -44,12 +46,34 @@ function applyDevSeed(todos: Todo[]): Todo[] {
 
 function migrateTodos(todos: Todo[], projects: Project[]): Todo[] {
   const fallbackProjectId = projects[0]?.id ?? DEFAULT_PROJECT_ID
+
+  // Assign readable Task IDs to any todo that doesn't have one yet, in
+  // createdAt order, continuing from whatever the highest already-assigned
+  // number is (see utils/taskId.ts) — stable across repeated migrations
+  // (already-numbered todos are never renumbered) and across new todos
+  // created afterward (addTodo does the same lookup against the live array).
+  let nextNumber = nextTaskNumber(todos)
+  const idsNeedingNumbers = [...todos]
+    .filter((t) => !t.taskId)
+    .sort((a, b) => a.createdAt - b.createdAt)
+  const assignedTaskIds = new Map<string, string>()
+  for (const t of idsNeedingNumbers) {
+    assignedTaskIds.set(t.id, formatTaskId(nextNumber))
+    nextNumber++
+  }
+
   return todos.map((todo) => {
     const t = todo as Partial<Todo>
     return {
       ...todo,
       priority: t.priority ?? DEFAULT_PRIORITY,
       projectId: t.projectId ?? fallbackProjectId,
+      taskId: t.taskId ?? assignedTaskIds.get(todo.id)!,
+      description: t.description ?? '',
+      notes: t.notes ?? '',
+      status: t.status ?? (todo.completed ? 'completed' : 'active'),
+      dueDate: t.dueDate,
+      updatedAt: t.updatedAt ?? todo.createdAt,
     }
   })
 }
@@ -69,6 +93,11 @@ function TodoPage() {
   const [isManagingProjects, setIsManagingProjects] = useState(false)
   const [isRecentlyDeletedOpen, setIsRecentlyDeletedOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  /** Id of the task currently open in the Task Details dialog, or `null`
+   * when it's closed. Storing just the id (not the whole Todo) means the
+   * dialog always reads the live, current todo below — never a stale
+   * snapshot from the moment it was opened. */
+  const [detailsTaskId, setDetailsTaskId] = useState<string | null>(null)
 
   const addTodo = (
     text: string,
@@ -78,17 +107,27 @@ function TodoPage() {
     projectId: string = projects[0]?.id ?? DEFAULT_PROJECT_ID,
   ) => {
     const scheduledDate = dateISO ?? selectedDate ?? undefined
+    const now = Date.now()
+    // taskId is computed from `prev`, not the `todos` closure, so two rapid
+    // calls to addTodo (before either one triggers a re-render) can never
+    // land on the same number — each functional update sees the result of
+    // the one before it.
     setTodos((prev) => [
       ...prev,
       {
         id: crypto.randomUUID(),
+        taskId: formatTaskId(nextTaskNumber(prev)),
         text,
         completed: false,
-        createdAt: Date.now(),
+        createdAt: now,
+        updatedAt: now,
         scheduledDate,
         scheduledTime: scheduledDate ? time : undefined,
         priority,
         projectId,
+        description: '',
+        notes: '',
+        status: 'active',
       },
     ])
   }
@@ -132,6 +171,11 @@ function TodoPage() {
 
   const editTodo = (id: string, text: string) => {
     setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, text } : todo)))
+  }
+
+  /** Applies a partial set of changes from the Task Details dialog's Save. */
+  const updateTodo = (id: string, changes: Partial<Todo>) => {
+    setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, ...changes } : todo)))
   }
 
   const clearCompleted = () => {
@@ -265,6 +309,14 @@ function TodoPage() {
   )
   const completedCount = searchFilteredTodos.length - activeCount
 
+  // Reads live from `todos` (not a snapshot captured at open time) — if
+  // some other change touches this task while its dialog is open, the
+  // dialog reflects it rather than silently going stale.
+  const detailsTodo = useMemo(
+    () => todos.find((todo) => todo.id === detailsTaskId) ?? null,
+    [todos, detailsTaskId],
+  )
+
   return (
     <AppLayout scrollable>
       <div className="layout">
@@ -319,6 +371,7 @@ function TodoPage() {
               onSchedule={scheduleTodo}
               onPriorityChange={changePriority}
               onProjectChange={changeProject}
+              onOpenDetails={setDetailsTaskId}
             />
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />
             <div className="todo-app__footer">
@@ -361,6 +414,15 @@ function TodoPage() {
           onClose={() => setIsRecentlyDeletedOpen(false)}
           onRestore={handleRestoreFromRecentlyDeleted}
           onDeletePermanently={deletePermanently}
+        />
+      )}
+      {detailsTodo && (
+        <TaskDetails
+          key={detailsTodo.id}
+          todo={detailsTodo}
+          projects={projects}
+          onClose={() => setDetailsTaskId(null)}
+          onSave={updateTodo}
         />
       )}
     </AppLayout>

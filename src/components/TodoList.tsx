@@ -18,6 +18,9 @@ interface TodoListProps {
   onSchedule: (id: string, dateISO: string, time?: string) => void
   onPriorityChange: (id: string, priority: Priority) => void
   onProjectChange: (id: string, projectId: string) => void
+  /** Opens the Task Details dialog for this task id (single click on its
+   * title — see TodoItem). */
+  onOpenDetails: (id: string) => void
 }
 
 export function TodoList({
@@ -34,6 +37,7 @@ export function TodoList({
   onSchedule,
   onPriorityChange,
   onProjectChange,
+  onOpenDetails,
 }: TodoListProps) {
   // Caller (TodoPage's .todo-app__content) owns the flexible, bounded
   // region this renders into — an empty list, a "no results" message, or a
@@ -72,6 +76,7 @@ export function TodoList({
           onSchedule={onSchedule}
           onPriorityChange={onPriorityChange}
           onProjectChange={onProjectChange}
+          onOpenDetails={onOpenDetails}
         />
       ))}
     </ul>

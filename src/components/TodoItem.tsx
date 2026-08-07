@@ -26,7 +26,12 @@ interface TodoItemProps {
   onSchedule: (id: string, dateISO: string, time?: string) => void
   onPriorityChange: (id: string, priority: Priority) => void
   onProjectChange: (id: string, projectId: string) => void
+  /** Opens the Task Details dialog for this task (single click/Enter on
+   * its title). */
+  onOpenDetails: (id: string) => void
 }
+
+const SINGLE_CLICK_DELAY_MS = 220 // long enough for a real double-click to cancel it — see handleTextClick.
 
 export function TodoItem({
   todo,
@@ -42,6 +47,7 @@ export function TodoItem({
   onSchedule,
   onPriorityChange,
   onProjectChange,
+  onOpenDetails,
 }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(todo.text)
@@ -49,6 +55,8 @@ export function TodoItem({
   const [pickDate, setPickDate] = useState('')
   const [pickTime, setPickTime] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const textRef = useRef<HTMLSpanElement>(null)
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (isEditing) {
@@ -57,9 +65,57 @@ export function TodoItem({
     }
   }, [isEditing])
 
+  // Pending single-click timer must not fire after the row unmounts (e.g.
+  // deleted mid-click).
+  useEffect(() => () => {
+    if (clickTimer.current) clearTimeout(clickTimer.current)
+  }, [])
+
   const startEditing = () => {
     setDraft(todo.text)
     setIsEditing(true)
+  }
+
+  const openDetails = () => {
+    // Focus the title itself first, so Dialog's focus-restore-on-close
+    // (which captures document.activeElement at open time) lands back on
+    // this exact task afterward, per the "restore focus to the previously
+    // selected task" requirement.
+    textRef.current?.focus()
+    onOpenDetails(todo.id)
+  }
+
+  // A single click opens Task Details; a double click starts the existing
+  // inline rename instead. Both land on the same element, and a real
+  // double-click always fires two `click` events before `dblclick` — so a
+  // naive onClick would open the dialog on the very first click of every
+  // double-click too. Debouncing the single-click action lets the second
+  // click (handled below) cancel it before that happens.
+  const handleTextClick = () => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current)
+      clickTimer.current = null
+      return
+    }
+    clickTimer.current = setTimeout(() => {
+      clickTimer.current = null
+      openDetails()
+    }, SINGLE_CLICK_DELAY_MS)
+  }
+
+  const handleTextDoubleClick = () => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current)
+      clickTimer.current = null
+    }
+    startEditing()
+  }
+
+  const handleTextKeyDown = (e: KeyboardEvent<HTMLSpanElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      openDetails()
+    }
   }
 
   const commitEdit = () => {
@@ -123,7 +179,16 @@ export function TodoItem({
               />
               <span className="checkmark" aria-hidden="true" />
             </label>
-            <span className="todo-text" onDoubleClick={startEditing}>
+            <span
+              ref={textRef}
+              className="todo-text"
+              tabIndex={0}
+              role="button"
+              aria-label={`View details for "${todo.text}"`}
+              onClick={handleTextClick}
+              onDoubleClick={handleTextDoubleClick}
+              onKeyDown={handleTextKeyDown}
+            >
               {getHighlightSegments(todo.text, searchQuery).map((segment, i) =>
                 segment.match ? <mark key={i}>{segment.text}</mark> : <span key={i}>{segment.text}</span>,
               )}

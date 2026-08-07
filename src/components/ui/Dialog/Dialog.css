@@ -1,0 +1,67 @@
+/* ==========================================================
+   Dialog — the application's reusable modal primitive.
+
+   Intentionally self-contained: it does NOT reuse the older
+   .dialog-overlay / .dialog-panel classes from App.css (those keep
+   powering ConfirmDialog / ManageProjectsDialog / RecentlyDeletedDialog
+   exactly as they already do — unchanged). This is the new standard going
+   forward; it matches them visually through the same shared design tokens
+   (CSS custom properties defined globally in index.css) rather than by
+   sharing class names, so there's zero risk of the two colliding.
+   ========================================================== */
+
+.ui-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 6, 13, 0.45);
+  backdrop-filter: blur(2px);
+  animation: ui-dialog-overlay-fade-in 0.18s ease-out;
+}
+
+@keyframes ui-dialog-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ui-dialog__panel {
+  width: 100%;
+  max-width: 560px;
+  max-height: 85svh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+  text-align: left;
+  animation: ui-dialog-panel-in 0.2s ease-out;
+
+  @media (max-width: 600px) {
+    max-width: 100%;
+    padding: 20px;
+    max-height: 90svh;
+  }
+}
+
+@keyframes ui-dialog-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

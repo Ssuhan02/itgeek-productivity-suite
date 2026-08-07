@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "PowerShell(Remove-Item *)",
-      "PowerShell(node \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\e88e4f3b-516b-4e6a-9331-4ea1d3ce4831\\\\scratchpad\\\\browser-check.mjs\" http://localhost:5173/ \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\e88e4f3b-516b-4e6a-9331-4ea1d3ce4831\\\\scratchpad\\\\smoke.png\")"
+      "PowerShell(node \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\e88e4f3b-516b-4e6a-9331-4ea1d3ce4831\\\\scratchpad\\\\browser-check.mjs\" http://localhost:5173/ \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\e88e4f3b-516b-4e6a-9331-4ea1d3ce4831\\\\scratchpad\\\\smoke.png\")",
+      "Bash(cp \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\2f3bbef9-2e4f-475b-bf8b-464ce748296e\\\\scratchpad\\\\verify-cursor.mjs\" ./verify-cursor.mjs)",
+      "Bash(node verify-cursor.mjs)",
+      "Bash(rm -f ./verify-cursor.mjs)",
+      "Bash(npx tsc *)",
+      "Bash(npx oxlint *)",
+      "Bash(cp \"C:\\\\Users\\\\Suhanul\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Suhan-Files-Vibe-Coding-ToDo-App\\\\2f3bbef9-2e4f-475b-bf8b-464ce748296e\\\\scratchpad\\\\verify-taskdetails-refine.mjs\" ./verify-taskdetails-refine.mjs)",
+      "Bash(node verify-taskdetails-refine.mjs)",
+      "Bash(rm -f ./verify-taskdetails-refine.mjs)"
     ]
   }
 }

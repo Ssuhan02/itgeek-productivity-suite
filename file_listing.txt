@@ -45,6 +45,7 @@ RecentlyDeletedItem.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 RestoreButton.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 SearchBar.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 Tagline.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
+TaskDetails.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 TimerBadge.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 Toast.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 ToastContainer.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
@@ -53,12 +54,16 @@ TodoInput.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 TodoItem.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 TodoList.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
 TodoToolbar.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components
+Dialog.css	C:\Suhan Files\Vibe Coding\ToDo App\src\components\ui\Dialog
+Dialog.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\components\ui\Dialog
+index.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\components\ui\Dialog
 branding.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\config
 dashboardTheme.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\config
 modules.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\config
 ConfirmContext.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\contexts
 ToastContext.tsx	C:\Suhan Files\Vibe Coding\ToDo App\src\contexts
 sampleTodos.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\dev
+useBodyScrollLock.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\hooks
 useConfirm.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\hooks
 useDeleteWithUndo.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\hooks
 useExitAnimation.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\hooks
@@ -85,6 +90,7 @@ priority.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\utils
 projects.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\utils
 search.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\utils
 sortTodos.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\utils
+taskId.ts	C:\Suhan Files\Vibe Coding\ToDo App\src\utils
 tsconfig.app.json	C:\Suhan Files\Vibe Coding\ToDo App
 tsconfig.json	C:\Suhan Files\Vibe Coding\ToDo App
 tsconfig.node.json	C:\Suhan Files\Vibe Coding\ToDo App

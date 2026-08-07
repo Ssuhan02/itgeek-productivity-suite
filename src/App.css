@@ -362,7 +362,13 @@
   padding: 7px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  /* background-color, not the `background` shorthand: a shorthand here
+     would reset background-image/-position/-repeat/-size to their initial
+     values on any <select> using this class — clobbering the shared
+     dropdown-arrow rules below (select { background-image: ... } etc.)
+     since .app-input's higher specificity would otherwise win. This is
+     what caused the Status field's tiled/mispositioned arrow. */
+  background-color: var(--bg);
   color: var(--text-h);
   transition: border-color 0.15s ease;
 
@@ -692,10 +698,12 @@ select.badge-pill {
 }
 
 /* Shared "standard" dropdown-arrow geometry: toolbar-sized Priority/Project selects,
-   the filter toolbar, and the calendar month/year selects all target this identical spec. */
+   the filter toolbar, the calendar month/year selects, and Task Details'
+   Status field all target this identical spec. */
 select.badge-pill.badge-pill--control,
 .todo-toolbar select,
-.calendar-month-year select {
+.calendar-month-year select,
+.task-details__status {
   padding-right: 32px;
   background-position: right 11px center;
   background-size: 11px;
@@ -896,6 +904,13 @@ select.badge-pill.badge-pill--control,
   opacity: 1;
   transform: translateY(0);
   overflow: hidden;
+  /* Signals the whole row opens Task Details on click — inherited by any
+     child that doesn't set its own cursor (empty space, the title text,
+     .todo-time), while checkbox/badges/buttons keep their own explicit
+     cursor (pointer, grab, not-allowed, ...) unaffected, since a more
+     specific rule always wins over an inherited value. Overridden back to
+     `default` below while a row is mid inline-rename (.editing). */
+  cursor: pointer;
   /* Keep in sync with EXIT_ANIMATION_MS in useDeleteWithUndo.ts. */
   transition: background 0.15s, opacity 0.24s ease, transform 0.24s ease, max-height 0.24s ease,
     padding 0.24s ease, border-color 0.24s ease;
@@ -1032,7 +1047,10 @@ select.badge-pill.badge-pill--control,
   line-height: 1.35;
   overflow-wrap: break-word;
   color: var(--text-h);
-  cursor: text;
+  /* Was `text` (implying "click to edit inline") — now `pointer`, matching
+     its actual primary action: a single click opens Task Details. Inline
+     rename is still there, just on double-click instead. */
+  cursor: pointer;
 }
 
 .completed .todo-text {
@@ -1646,6 +1664,19 @@ select.badge-pill.badge-pill--control,
   }
 }
 
+/* Positive/primary action (e.g. Task Details' Save) — same accent purple as
+   .add-btn, as its own .dialog-btn modifier so any future dialog gets it
+   for free instead of re-deriving the color. */
+.dialog-btn--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
 /* Recently Deleted dialog: reuses .dialog-overlay/.dialog-panel as its base
    (same pattern as .confirm-dialog above), just wider to fit a list of cards. */
 .recently-deleted-dialog {
@@ -1927,6 +1958,121 @@ select.badge-pill.badge-pill--control,
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
+}
+
+/* ==========================================================
+   Task Details dialog (components/TaskDetails.tsx) — built on the new
+   reusable <Dialog> primitive (components/ui/Dialog). Uses .dialog-header /
+   .dialog-close-btn / .dialog-btn / .app-input, all already established
+   above, plus its own section/grid layout only.
+   ========================================================== */
+
+.task-details__id {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
+
+.task-details__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+
+  &:first-of-type {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+  }
+}
+
+.task-details__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  > span:first-child {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  textarea.app-input {
+    resize: vertical;
+    min-height: 60px;
+  }
+}
+
+/* The primary editing area — noticeably taller than Notes below (and than
+   the 60px generic textarea default above), per the visual-emphasis swap:
+   Description is where the real editing happens, Notes is a smaller,
+   secondary field. Position in the layout is unchanged, only height.
+   Selector matches (and, being later in the file, beats) the generic
+   ".task-details__field textarea.app-input" rule's specificity — a bare
+   ".task-details__description" class alone would lose to it. */
+textarea.app-input.task-details__description {
+  min-height: 160px;
+}
+
+/* Status: a plain native <select> styled to match Priority/Project's
+   "control" sizing (height, padding, radius, typography) and dropdown-
+   arrow position exactly — see select.badge-pill.badge-pill--control /
+   .task-details__status above for the shared arrow geometry — but keeps
+   .app-input's plain white background/border instead of their colored
+   badge treatment, per design. padding-right is NOT set here; it comes
+   from that same shared arrow-geometry rule, so the two never fight over
+   which one "wins" the right edge. */
+.task-details__status {
+  height: 32px;
+  font-size: 13px;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 10px;
+}
+
+.task-details__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.task-details__grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Secondary/supporting field — smaller than Description above, per the
+   visual-emphasis swap (was 110px, taller than Description's old 60px;
+   now clearly the smaller of the two). Position unchanged, only height. */
+.task-details__notes {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.task-details__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .project-manager-list {
